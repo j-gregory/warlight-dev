@@ -13,17 +13,25 @@ class Parser
  public:
   Parser();
   virtual ~Parser();
+
+  /* Parser: Controller */
   void initParser(Bot* bot);
   void parseInput();
-  void parseSetup_Map();
-  void parseStarting_Regions();
+
+  /* Parser: High-level Type */
   void parseSettings();
-  void parseUpdate_Map();
-  void parseOpponent_Moves();
+  void parseSetupMap();
+  void parseStartingRegions();
+  void parseUpdateMap();
+  void parseOpponentMoves();
   void parseGo();
-  void parseSuper_Regions();
+
+  /* Parser: setup_map arguments */
+  void parseSuperRegions();
   void parseRegions();
   void parseNeighbors();
+  void parseWastelands();
+  void parseOpponentStartingRegions();
 
  protected:
 
