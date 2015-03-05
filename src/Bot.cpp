@@ -136,8 +136,9 @@ void Bot::executeAction()
   if (phase == "")
     return;
 
-  if (phase == "pickPreferredRegion")
+  else if (phase == "pickPreferredRegion")
   {
+    /*
     unsigned i;
     unsigned num_ans = 0;
     for (i = 0; i < starting_regions.size() && num_ans < 6; i++)
@@ -152,14 +153,28 @@ void Bot::executeAction()
 	break;
       }
     }
+    */
+    if (starting_regions.size() <= 0)
+    {
+      std::cout << "No moves\n"; 
+      std::cout.flush();
+    }
+    else
+    {
+      std::cout << std::to_string(starting_regions[0]) << "\n"; 
+      std::cout.flush();
+    }
+    
+    // Just delete all because you will add updated list in next iteration (if any)
+    starting_regions.clear();
   }
 
-  if (phase == "place_armies")
+  else if (phase == "place_armies")
   {
     std::cout << bot_name << " place_armies " << owned_regions[0] << " " << armies_left << "\n";
   }
 
-  if (phase == "attack/transfer")
+  else if (phase == "attack/transfer")
   {
     std::cout << "No moves\n" ;
     // std::cout << botName << " attack/transfer " << from << " " << to << " "<< armiesMoved;

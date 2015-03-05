@@ -97,6 +97,14 @@ void Parser::parseSettings()
     // Nothing to do because pick_starting_region will supply same list
     // Could record these regions if you wanted to do some processing while engine is working
     // This process could be good because it wouldn't use time from timebank
+    // Don't know what opponent is going to choose, but could prioritize all regions
+
+
+    // Upon further analysis:
+    //  1) They give you 5 starting regions to choose from
+    //  2) Two players, each get to choose two regions
+    //  3) They don't tell all of the choices your opponent made BUT you can deduce
+
     /*
     int region;
     while(std::cin  >> region)
@@ -148,7 +156,7 @@ void Parser::parseStartingRegions()
   while(std::cin  >> region)
   {
     bot->addStartingRegion(region);
-    if (std::cin.peek()== '\n')
+    if (std::cin.peek() == '\n')
       break;
   }
   bot->setPhase("pickPreferredRegion");
