@@ -10,14 +10,14 @@ SuperRegion::~SuperRegion()
   //dtor
 }
 
-SuperRegion::SuperRegion(int pReward)
+SuperRegion::SuperRegion(int p_reward)
 {
-  reward = pReward;
+  reward = p_reward;
 }
-void SuperRegion::addRegion(int noRegion)
+void SuperRegion::addRegion(int no_region)
 {
-  regions.push_back(noRegion);
-  nbRegions++;
+  regions.push_back(no_region);
+  num_regions++;
 }
 
 int SuperRegion::getNbRegions()

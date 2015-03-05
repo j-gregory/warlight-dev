@@ -18,15 +18,13 @@ class Bot
   double timebank;
   double time_per_move;
   int max_rounds;
-  std::string botName;
-  std::string opponentBotName;
-  std::vector<SuperRegion> superRegions;
-
-
+  std::string bot_name;
+  std::string opponent_bot_name;
+  std::vector<SuperRegion> super_regions;
   std::vector<Region> regions;
-  std::vector<int> startingRegionsreceived;
-  std::vector<int> ownedRegions;
-  int armiesLeft;
+  std::vector<int> starting_regions_received;
+  std::vector<int> owned_regions;
+  int armies_left;
 
   Parser parser;
   std::string phase;
@@ -45,18 +43,18 @@ class Bot
   void setMaxRounds(int max);
   void setBotName(std::string name);
   void setOpponentBotName(std::string name);
-  void setArmiesLeft(int nbArmies);
-  void setPhase(std::string pPhase);
+  void setArmiesLeft(int num_armies);
+  void setPhase(std::string p_phase);
 
-  void addRegion(unsigned noRegion, unsigned noSuperRegion);
-  void addSuperRegion(unsigned noSuperRegion, int reward);
-  void addNeighbors(unsigned noRegion, unsigned Neighbors);
-  void addArmies(unsigned noRegion, int nbArmies);
-  void moveArmies(unsigned noRegion, unsigned toRegion, int nbArmies);
-  void addStartingRegion(unsigned noRegion);
+  void addRegion(unsigned no_region, unsigned no_super_region);
+  void addSuperRegion(unsigned no_super_region, int reward);
+  void addNeighbors(unsigned no_region, unsigned neighbors);
+  void addArmies(unsigned no_region, int num_armies);
+  void moveArmies(unsigned no_region, unsigned to_region, int num_armies);
+  void addStartingRegion(unsigned no_region);
   void startDelay(int delay);
   void executeAction();
-  void updateRegion(unsigned noRegion, std::string playerName, int nbArmies);
+  void updateRegion(unsigned no_region, std::string player_name, int num_armies);
   void resetRegionsOwned();
 
  private:

@@ -8,14 +8,14 @@
 class Bot;
 class Parser
 {
-  Bot* theBot;
+  Bot* bot;
   
  public:
   Parser();
   virtual ~Parser();
 
   /* Parser: Controller */
-  void initParser(Bot* bot);
+  void initParser(Bot* b);
   void parseInput();
 
   /* Parser: High-level Type */

@@ -8,18 +8,18 @@ class Region
 {  
   std::vector<int> neighbors;
   int id;
-  int nbNeighbors;
-  int superRegion;
+  int num_neighbors;
+  int super_region;
   std::string owner;
   int armies;
 
  public:
   Region();
-  Region(int pId,int superRegion);
+  Region(int p_id,int super_region);
   virtual ~Region();
-  void addNeighbors(int Neighbors);
-  void setArmies(int nbArmies);
-  void setOwner(std::string owner);
+  void addNeighbors(int n);
+  void setArmies(int num_armies);
+  void setOwner(std::string o);
   int getArmies();
   std::string getOwner();
   int getSuperRegion();

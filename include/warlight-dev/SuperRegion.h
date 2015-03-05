@@ -7,14 +7,14 @@
 class SuperRegion
 {
   std::vector<int> regions;
-  int nbRegions;
+  int num_regions;
   int reward;
 
  public:
   SuperRegion();
-  SuperRegion(int pReward);
+  SuperRegion(int p_reward);
   virtual ~SuperRegion();
-  void addRegion(int noRegion);
+  void addRegion(int no_region);
   int getNbRegions();
 
  protected:
