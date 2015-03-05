@@ -58,18 +58,21 @@ void Parser::parseSettings()
 
   if (settingType == "timebank")
   {
-    //std::cin >> timebank;
-    //theBot->setTimebank(timebank);
+    double timebank;
+    std::cin >> timebank;
+    theBot->setTimebank(timebank);
   }
   else if (settingType == "time_per_move")
   {
-    //std::cin >> time_per_move;
-    //theBot->setTimePerMove(time_per_move);
+    double time;
+    std::cin >> time;
+    theBot->setTimePerMove(time);
   }
   else if (settingType == "max_rounds")
   {
-    //std::cin >> max;
-    //theBot->setMaxRounds(max);
+    double max;
+    std::cin >> max;
+    theBot->setMaxRounds(max);
   }
   else if (settingType == "your_bot")
   {

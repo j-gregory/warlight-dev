@@ -30,6 +30,46 @@ void Bot::endTurn()
   
 }
 
+/* ************************************ */
+
+/* Setters */
+void Bot::setTimebank(double time)
+{
+  timebank = time;
+}
+
+void Bot::setTimePerMove(double time)
+{
+  time_per_move = time;
+}
+
+void Bot::setMaxRounds(int max)
+{
+  max_rounds = max;
+}
+
+void Bot::setBotName(std::string name)
+{
+  botName = name;
+}
+
+void Bot::setOpponentBotName(std::string name)
+{
+  opponentBotName = name;
+}
+
+void Bot::setArmiesLeft(int nbArmies)
+{
+  armiesLeft = nbArmies;
+}
+
+void Bot::setPhase(std::string pPhase)
+{
+  phase = pPhase;
+}
+
+/* ************************************ */
+
 void Bot::addRegion(unsigned noRegion, unsigned noSuperRegion)
 {
   while (regions.size() <= noRegion)
@@ -55,21 +95,6 @@ void Bot::addSuperRegion(unsigned noSuperRegion, int reward)
   superRegions[noSuperRegion] = SuperRegion(reward);
 }
 
-void Bot::setBotName(std::string name)
-{
-  botName = name;
-}
-
-void Bot::setOpponentBotName(std::string name)
-{
-  opponentBotName = name;
-}
-
-void Bot::setArmiesLeft(int nbArmies)
-{
-  armiesLeft = nbArmies;
-}
-
 void Bot::addStartingRegion(unsigned noRegion)
 {
   startingRegionsreceived.push_back(noRegion);
@@ -78,11 +103,6 @@ void Bot::addStartingRegion(unsigned noRegion)
 void Bot::startDelay(int delay)
 {
 
-}
-
-void Bot::setPhase(std::string pPhase)
-{
-  phase = pPhase;
 }
 
 void Bot::executeAction()
