@@ -31,7 +31,7 @@ void Parser::parseInput()
       parseSettings();
     else if (input_type == "setup_map")
       parseSetupMap();
-    else if (input_type == "pick_starting_regions")
+    else if (input_type == "pick_starting_region")
       parseStartingRegions();
     else if (input_type == "update_map")
       parseUpdateMap();
@@ -94,11 +94,24 @@ void Parser::parseSettings()
   }
   else if (setting_type == "starting_regions")
   {
-    // Do something
+    // Nothing to do because pick_starting_region will supply same list
+    // Could record these regions if you wanted to do some processing while engine is working
+    // This process could be good because it wouldn't use time from timebank
+    /*
+    int region;
+    while(std::cin  >> region)
+    {
+      bot->addStartingRegion(region);
+      if (std::cin.peek()== '\n')
+	break;
+    }
+    */
   }
   else if (setting_type == "starting_pick_amount")
   {
-    // Do something
+    int amount;
+    std::cin >> amount;
+    bot->setPickAmount(amount);
   }
 }
 
@@ -129,9 +142,9 @@ void Parser::parseStartingRegions()
   std::cout << "parseStartingRegions\n";
 #endif // DEBUG_PRINT
   int region;
-  int delay;
-  std::cin >> delay;
-  bot->startDelay(delay);
+  int time_limit;
+  std::cin >> time_limit;
+  bot->startClock(time_limit);
   while(std::cin  >> region)
   {
     bot->addStartingRegion(region);
@@ -191,9 +204,9 @@ void Parser::parseOpponentMoves()
 void Parser::parseGo()
 {
   std::string phase;
-  int delay;
-  std::cin >> phase >> delay;
-  bot->startDelay(delay);
+  int time_limit;
+  std::cin >> phase >> time_limit;
+  bot->startClock(time_limit);
   bot->setPhase(phase);
 }
 

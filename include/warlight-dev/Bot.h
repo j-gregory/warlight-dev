@@ -22,9 +22,10 @@ class Bot
   std::string opponent_bot_name;
   std::vector<SuperRegion> super_regions;
   std::vector<Region> regions;
-  std::vector<int> starting_regions_received;
+  std::vector<int> starting_regions;
   std::vector<int> owned_regions;
   int armies_left;
+  int pick_amount;
 
   Parser parser;
   std::string phase;
@@ -44,15 +45,16 @@ class Bot
   void setBotName(std::string name);
   void setOpponentBotName(std::string name);
   void setArmiesLeft(int num_armies);
+  void setPickAmount(int amount);
   void setPhase(std::string p_phase);
 
-  void addRegion(unsigned no_region, unsigned no_super_region);
+  void addStartingRegion(unsigned no_region);
   void addSuperRegion(unsigned no_super_region, int reward);
+  void addRegion(unsigned no_region, unsigned no_super_region);
   void addNeighbors(unsigned no_region, unsigned neighbors);
   void addArmies(unsigned no_region, int num_armies);
   void moveArmies(unsigned no_region, unsigned to_region, int num_armies);
-  void addStartingRegion(unsigned no_region);
-  void startDelay(int delay);
+  void startClock(int clock);
   void executeAction();
   void updateRegion(unsigned no_region, std::string player_name, int num_armies);
   void resetRegionsOwned();
