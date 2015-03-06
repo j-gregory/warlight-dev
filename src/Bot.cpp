@@ -211,6 +211,7 @@ void Bot::executeAction()
 	{
 	  std::cout << std::to_string(candidate) << "\n";
 	  std::cout.flush();
+	  phase.clear();
 	  return;
 	}
       }
@@ -219,14 +220,36 @@ void Bot::executeAction()
 
   else if (phase == "place_armies")
   {
-    std::cout << bot_name << " place_armies " << owned_regions[0] << " " << armies_left << "\n";
+    if (owned_regions.size() > 0)
+    {
+      int index = rand() % owned_regions.size();
+      std::cout << bot_name << " place_armies " << owned_regions[index] << " " << armies_left << "\n";
+      std::cout.flush();
+    }
+    else
+    {
+      std::cout << "No moves\n" ;
+    }
   }
 
   else if (phase == "attack/transfer")
   {
-    std::cout << "No moves\n" ;
-    // std::cout << botName << " attack/transfer " << from << " " << to << " "<< armiesMoved;
+    if (owned_regions.size() > 0)
+    {
+      // Attack from random start to adjacent with all troops available
+      int index = rand() % owned_regions.size();
+      int from = owned_regions[index];
+      int to = from+1;
+      int armies = regions[from].getNumArmies() - 1;
+      std::cout << bot_name << " attack/transfer " << from << " " << to << " "<< armies << "\n";
+      std::cout.flush();
+    }
+    else
+    {
+      std::cout << "No moves\n" ;
+    }
   }
+
   phase.clear();
 }
 
