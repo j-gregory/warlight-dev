@@ -234,12 +234,30 @@ void Bot::executeAction()
 
   else if (phase == "attack/transfer")
   {
+    // Better naive method would be to sort owned_regions based on number of armies, choose largest
     if (owned_regions.size() > 0)
     {
       // Attack from random start to adjacent with all troops available
-      int index = rand() % owned_regions.size();
+      int counter = 0;
+      int num_owned = owned_regions.size();
+      int index = rand() % num_owned;
       int from = owned_regions[index];
+      counter++;
+      while (regions[from].getNumArmies() < 2)
+      {
+	index = rand() % owned_regions.size();
+	from = owned_regions[index];
+	counter++;
+	if (counter > num_owned)
+	{
+	  std::cout << "No moves\n";
+	  std::cout.flush();
+	  return;
+	}
+      }
+      // Obviously, not going to work all the time
       int to = from+1;
+      // ATTACKKKK!
       int armies = regions[from].getNumArmies() - 1;
       std::cout << bot_name << " attack/transfer " << from << " " << to << " "<< armies << "\n";
       std::cout.flush();
