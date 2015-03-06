@@ -23,7 +23,7 @@ class SuperRegion
   int getNumRegions()           const { return num_regions; };
   int getReward()               const { return reward; };
 
-  void addRegion(int no_region);  
+  void addRegion(int region_id);  
   void print();
 
   bool operator< (const SuperRegion& other) const;

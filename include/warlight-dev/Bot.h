@@ -56,12 +56,12 @@ class Bot
   void setPickAmount(int amount);
   void setPhase(std::string p_phase);
 
-  void addStartingRegion(unsigned no_region);
-  void addAvailableRegion(unsigned no_region);
-  void addSuperRegion(unsigned no_super_region, int reward);
-  void addRegion(unsigned no_region, unsigned no_super_region);
-  void addNeighbors(unsigned no_region, unsigned neighbors);
-  void addArmies(unsigned no_region, int num_armies);
+  void addStartingRegion(unsigned region_id);
+  void addAvailableRegion(unsigned region_id);
+  void addSuperRegion(unsigned super_region_id, int reward);
+  void addRegion(unsigned region_id, unsigned super_region_id);
+  void addNeighbors(unsigned region_id, unsigned neighbors);
+  void addArmies(unsigned region_id, int num_armies);
 
   void analyzeSuperRegions();
   void analyzeRegions();
@@ -69,8 +69,8 @@ class Bot
 
   void startClock(int clock);
   void executeAction();
-  void moveArmies(unsigned no_region, unsigned to_region, int num_armies);
-  void updateRegion(unsigned no_region, std::string player_name, int num_armies);
+  void moveArmies(unsigned region_id, unsigned to_region, int num_armies);
+  void updateRegion(unsigned region_id, std::string player_name, int num_armies);
   void resetAvailableRegions();
   void resetRegionsOwned();
 

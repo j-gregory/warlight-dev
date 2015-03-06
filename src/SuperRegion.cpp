@@ -17,9 +17,9 @@ SuperRegion::~SuperRegion()
   //dtor
 }
 
-void SuperRegion::addRegion(int no_region)
+void SuperRegion::addRegion(int region_id)
 {
-  regions.push_back(no_region);
+  regions.push_back(region_id);
   num_regions++;
 }
 

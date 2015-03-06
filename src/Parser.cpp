@@ -184,12 +184,12 @@ void Parser::parseUpdateMap()
   std::cout <<"parseUpdate_Map\n";
 #endif // DEBUG_PRINT
   std::string player_name;
-  int no_region;
+  int region_id;
   int num_armies;
   bot->resetRegionsOwned();
-  while (std::cin >> no_region >> player_name >> num_armies)
+  while (std::cin >> region_id >> player_name >> num_armies)
   {
-    bot->updateRegion(no_region, player_name, num_armies);
+    bot->updateRegion(region_id, player_name, num_armies);
     if (std::cin.peek()== '\n')
       break;
   }
@@ -203,20 +203,20 @@ void Parser::parseOpponentMoves()
 #endif // DEBUG_PRINT
   std::string player_name;
   std::string action;
-  int no_region;
+  int region_id;
   int num_armies; 
   int to_region;
   while (std::cin.peek()!= '\n' && std::cin >> player_name >> action)
   {
     if (action == "place_armies")
     {
-      std::cin >> no_region >> num_armies;
-      bot->addArmies(no_region, num_armies);
+      std::cin >> region_id >> num_armies;
+      bot->addArmies(region_id, num_armies);
     }
     if (action == "attack/transfer")
     {
-      std::cin >> no_region >> to_region >> num_armies;
-      bot->moveArmies(no_region, to_region, num_armies);
+      std::cin >> region_id >> to_region >> num_armies;
+      bot->moveArmies(region_id, to_region, num_armies);
     }
     if (std::cin.peek()== '\n')
       break;
