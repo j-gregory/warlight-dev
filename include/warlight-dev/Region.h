@@ -15,15 +15,23 @@ class Region
 
  public:
   Region();
-  Region(int p_id,int super_region);
+  Region(int p_id, int super_region);
   virtual ~Region();
-  void addNeighbors(int n);
-  void setArmies(int num_armies);
+
+  /* Getters */
+  std::vector<int>& getNeighbors() { return neighbors; };
+  int getID()                      const { return id; };
+  int getNumNeighbors()            const { return num_neighbors; };
+  int getSuperRegionID()           const { return super_region; };
+  std::string getOwner()           const { return owner; };
+  int getNumArmies()               const { return armies; };
+
+  /* Setters */
   void setOwner(std::string o);
-  int getArmies();
-  std::string getOwner();
-  int getSuperRegion();
-  std::vector<int>& getNeighbors();
+  void setArmies(int num_armies);
+
+  void addNeighbors(int n);
+  void print();
 
  protected:
 

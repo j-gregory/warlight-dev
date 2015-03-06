@@ -19,9 +19,10 @@ class Parser
   void parseInput();
 
   /* Parser: High-level Type */
+  void parseRoundNumber();
   void parseSettings();
   void parseSetupMap();
-  void parseStartingRegions();
+  void parsePickStartingRegions();
   void parseUpdateMap();
   void parseOpponentMoves();
   void parseGo();

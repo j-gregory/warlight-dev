@@ -4,12 +4,12 @@
 #include "SuperRegion.h"
 
 
-Region::Region()
+Region::Region() : num_neighbors(0), armies(0)
 {
   //ctor
 }
 
-Region::Region(int p_id, int super_region)
+Region::Region(int p_id, int super_region) : num_neighbors(0), armies(0)
 {
   this->super_region = super_region;
   id = p_id;
@@ -19,35 +19,24 @@ Region::~Region()
 {
   //dtor
 }
-void Region::addNeighbors(int n)
+
+void Region::setOwner(std::string o)
 {
-  neighbors.push_back(n);
+  owner = o;
 }
 
 void Region::setArmies(int num_armies)
 {
   armies = num_armies;
 }
-void Region::setOwner(std::string o)
+
+void Region::addNeighbors(int n)
 {
-  owner = o;
-}
-int Region::getArmies()
-{
-  return armies;
-}
-std::string Region::getOwner()
-{
-  return owner;
+  neighbors.push_back(n);
 }
 
-int Region::getSuperRegion()
-{
-  return super_region;
-}
 
-std::vector<int>& Region::getNeighbors()
-{
-  return neighbors;
-}
+
+
+
 

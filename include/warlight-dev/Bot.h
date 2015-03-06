@@ -1,8 +1,10 @@
 #ifndef BOT_H
 #define BOT_H
 
+#include <algorithm>
 #include <fstream>
 #include <iostream>
+#include <map>
 #include <stdio.h>
 #include <string>
 #include <vector>
@@ -15,15 +17,20 @@ class Bot
 {
   std::ifstream in;
 
+  int round_number;
   double timebank;
   double time_per_move;
   int max_rounds;
   std::string bot_name;
   std::string opponent_bot_name;
   std::vector<SuperRegion> super_regions;
+  std::vector<SuperRegion> p_super_regions;
   std::vector<Region> regions;
-  std::vector<int> starting_regions;
+  std::vector<int> prev_avail_regions;
+  std::vector<int> curr_avail_regions;
+  std::map<int, std::string> belief_regions;
   std::vector<int> owned_regions;
+  std::vector<int> opponent_regions;
   int armies_left;
   int pick_amount;
 
@@ -38,7 +45,8 @@ class Bot
   void makeMoves();   // Makes moves for a single turn
   void endTurn();     // Indicates to the engine that it has made its moves
 
-  // Setters
+  /* Setters */
+  void setRoundNumber(int round);
   void setTimebank(double time);
   void setTimePerMove(double time);
   void setMaxRounds(int max);
@@ -49,15 +57,24 @@ class Bot
   void setPhase(std::string p_phase);
 
   void addStartingRegion(unsigned no_region);
+  void addAvailableRegion(unsigned no_region);
   void addSuperRegion(unsigned no_super_region, int reward);
   void addRegion(unsigned no_region, unsigned no_super_region);
   void addNeighbors(unsigned no_region, unsigned neighbors);
   void addArmies(unsigned no_region, int num_armies);
-  void moveArmies(unsigned no_region, unsigned to_region, int num_armies);
+
+  void analyzeSuperRegions();
+  void analyzeRegions();
+  void analyzeAvailableRegions();
+
   void startClock(int clock);
   void executeAction();
+  void moveArmies(unsigned no_region, unsigned to_region, int num_armies);
   void updateRegion(unsigned no_region, std::string player_name, int num_armies);
+  void resetAvailableRegions();
   void resetRegionsOwned();
+
+  void printStatus();
 
  private:
 

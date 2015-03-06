@@ -27,23 +27,38 @@ void Parser::parseInput()
   std::string input_type;
   while (std::cin >> input_type)
   {
+    if (input_type == "Round")
+      parseRoundNumber();
     if (input_type == "settings")
       parseSettings();
     else if (input_type == "setup_map")
       parseSetupMap();
     else if (input_type == "pick_starting_region")
-      parseStartingRegions();
+      parsePickStartingRegions();
     else if (input_type == "update_map")
       parseUpdateMap();
     else if (input_type == "opponent_moves")
       parseOpponentMoves();
     else if (input_type == "go")
       parseGo();
+    else if (input_type == "debug")
+      bot->printStatus();
     bot->executeAction();
   }
 }
 
 /* ************************************ */
+
+/* "Round #" Parser */
+void Parser::parseRoundNumber()
+{
+#ifdef DEBUG_PRINT
+  std::cout << "parseSettings\n";
+#endif // DEBUG_PRINT
+  int round;
+  std::cin >> round;
+  bot->setRoundNumber(round);
+}
 
 /* "settings" Parser */
 void Parser::parseSettings()
@@ -105,7 +120,6 @@ void Parser::parseSettings()
     //  2) Two players, each get to choose two regions
     //  3) They don't tell all of the choices your opponent made BUT you can deduce
 
-    /*
     int region;
     while(std::cin  >> region)
     {
@@ -113,7 +127,6 @@ void Parser::parseSettings()
       if (std::cin.peek()== '\n')
 	break;
     }
-    */
   }
   else if (setting_type == "starting_pick_amount")
   {
@@ -144,7 +157,7 @@ void Parser::parseSetupMap()
 }
 
 /* "pick_starting_regions" Parser */
-void Parser::parseStartingRegions()
+void Parser::parsePickStartingRegions()
 {
 #ifdef DEBUG_PRINT
   std::cout << "parseStartingRegions\n";
@@ -153,12 +166,14 @@ void Parser::parseStartingRegions()
   int time_limit;
   std::cin >> time_limit;
   bot->startClock(time_limit);
+  bot->resetAvailableRegions();
   while(std::cin  >> region)
   {
-    bot->addStartingRegion(region);
+    bot->addAvailableRegion(region);
     if (std::cin.peek() == '\n')
       break;
   }
+  bot->analyzeAvailableRegions();
   bot->setPhase("pickPreferredRegion");
 }
 
@@ -236,6 +251,8 @@ void Parser::parseSuperRegions()
     if (std::cin.peek()== '\n')
       break;
   }
+  //Shouldn't analyze here
+  //bot->analyzeSuperRegions();
 }
 
 /* "setup_map regions" Parser */
@@ -254,6 +271,8 @@ void Parser::parseRegions()
     if (std::cin.peek()== '\n')
       break;
   }
+  bot->analyzeSuperRegions();
+  //bot->analyzeRegions();
 }
 
 /* "setup_map neighbors" Parser */

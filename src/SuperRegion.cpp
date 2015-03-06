@@ -1,8 +1,15 @@
 #include "SuperRegion.h"
 
-SuperRegion::SuperRegion()
+
+SuperRegion::SuperRegion() : num_regions(0)
 {
   //ctor
+}
+
+SuperRegion::SuperRegion(int p_id, int p_reward) : num_regions(0)
+{
+  id = p_id;
+  reward = p_reward;
 }
 
 SuperRegion::~SuperRegion()
@@ -10,17 +17,20 @@ SuperRegion::~SuperRegion()
   //dtor
 }
 
-SuperRegion::SuperRegion(int p_reward)
-{
-  reward = p_reward;
-}
 void SuperRegion::addRegion(int no_region)
 {
   regions.push_back(no_region);
   num_regions++;
 }
 
-int SuperRegion::getNbRegions()
+void SuperRegion::print()
 {
-  return regions.size();
+  //std::cout << "Num regions: " << num_regions << "\n";
+  //std::cout << "Regions.size: " << regions.size() << "\n";
+  //for (int i = 0; i < regions.size(); i++)
+}
+
+bool SuperRegion::operator< (const SuperRegion& other) const
+{
+  return (reward < other.getReward());
 }
