@@ -27,6 +27,7 @@ class Region
   int getNumArmies()               const { return armies; };
 
   /* Setters */
+  void setNumNeighbors(int n);
   void setOwner(std::string o);
   void setArmies(int num_armies);
 

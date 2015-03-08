@@ -20,6 +20,11 @@ Region::~Region()
   //dtor
 }
 
+void Region::setNumNeighbors(int n)
+{
+  num_neighbors = n;
+}
+
 void Region::setOwner(std::string o)
 {
   owner = o;
@@ -33,6 +38,7 @@ void Region::setArmies(int num_armies)
 void Region::addNeighbors(int n)
 {
   neighbors.push_back(n);
+  setNumNeighbors(neighbors.size());
 }
 
 
