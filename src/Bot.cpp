@@ -143,6 +143,7 @@ void Bot::analyzeSuperRegions()
 
 void Bot::analyzeRegions()
 {
+  /*
   // For now, just printouts for debugging
   std::cout << "\nStarting: \n";
   for(int i = 0; i < super_regions.size(); i++)
@@ -161,7 +162,7 @@ void Bot::analyzeRegions()
       std::cout << regions[j] << " ";
     std::cout << "\n";
   }
-
+  */
 }
 
 void Bot::analyzeAvailableRegions()
@@ -223,8 +224,11 @@ void Bot::executeAction()
     if (owned_regions.size() > 0)
     {
       int index = rand() % owned_regions.size();
-      std::cout << bot_name << " place_armies " << owned_regions[index] << " " << armies_left << "\n";
+      int region_id = owned_regions[index];
+      std::cout << bot_name << " place_armies " << region_id << " " << armies_left << "\n";
       std::cout.flush();
+      // Update
+      regions[region_id].setArmies(regions[region_id].getNumArmies()+armies_left);
     }
     else
     {
@@ -234,6 +238,7 @@ void Bot::executeAction()
 
   else if (phase == "attack/transfer")
   {
+    /*
     // Better naive method would be to sort owned_regions based on number of armies, choose largest
     if (owned_regions.size() > 0)
     {
@@ -261,6 +266,41 @@ void Bot::executeAction()
       int armies = regions[from].getNumArmies() - 1;
       std::cout << bot_name << " attack/transfer " << from << " " << to << " "<< armies << "\n";
       std::cout.flush();
+    }
+    */
+
+
+    // Find region we own that has largest number of armies
+    if (owned_regions.size() > 0)
+    {
+      int from_id = 0;
+      int from_index = 0;
+      int max_armies = 0;
+      int temp_region = 0;
+      int temp_armies = 0;
+      for (int i = 0; i < owned_regions.size(); i++)
+      {
+	temp_region = owned_regions[i];
+	temp_armies = regions[temp_region].getNumArmies();
+
+	if (temp_armies > max_armies)
+	{
+	  from_id = temp_region;
+	  from_index = i;
+	  max_armies = temp_armies;
+	}
+      }
+
+      // Find (random) adjacent region
+      int owned_region = owned_regions[from_index];
+      int rand_index = rand() % regions[owned_region].getNumNeighbors();
+      int to = regions[owned_region].getNeighbors()[rand_index];
+
+      // ATTACKKKK!
+      int armies = max_armies - 1;
+      std::cout << bot_name << " attack/transfer " << from_id << " " << to << " "<< armies << "\n";
+      std::cout.flush();
+
     }
     else
     {
