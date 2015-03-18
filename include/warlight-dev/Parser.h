@@ -1,5 +1,5 @@
-#ifndef PARSER_H_INCLUDED
-#define PARSER_H_INCLUDED
+#ifndef __PARSER_H_INCLUDED__
+#define __PARSER_H_INCLUDED__
 
 #include <stdio.h>
 #include <string>
@@ -40,4 +40,4 @@ class Parser
   std::vector<std::string>& splitString(std::string String, std::vector<std::string>& flds, char delim);
 };
 
-#endif // PARSER_H_INCLUDED
+#endif // __PARSER_H_INCLUDED__

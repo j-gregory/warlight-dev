@@ -1,5 +1,5 @@
-#ifndef BOT_H
-#define BOT_H
+#ifndef __BOT_H__
+#define __BOT_H__
 
 #include <algorithm>
 #include <fstream>
@@ -80,4 +80,4 @@ class Bot
 
 };
 
-#endif // BOT_H
+#endif // __BOT_H__

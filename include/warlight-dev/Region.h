@@ -1,5 +1,5 @@
-#ifndef REGION_H
-#define REGION_H
+#ifndef __REGION_H__
+#define __REGION_H__
 
 #include <vector>
 #include <string>
@@ -40,4 +40,4 @@ class Region
 
 };
 
-#endif // REGION_H
+#endif // __REGION_H__

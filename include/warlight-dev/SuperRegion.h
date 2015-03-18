@@ -1,5 +1,5 @@
-#ifndef SUPERREGION_H_INCLUDED
-#define SUPERREGION_H_INCLUDED
+#ifndef __SUPERREGION_H_INCLUDED__
+#define __SUPERREGION_H_INCLUDED__
 
 #include <vector>
 #include "Region.h"
@@ -36,4 +36,4 @@ class SuperRegion
 
 
 
-#endif // SUPERREGION_H_INCLUDED
+#endif // __SUPERREGION_H_INCLUDED__
