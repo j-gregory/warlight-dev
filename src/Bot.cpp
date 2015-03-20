@@ -269,7 +269,7 @@ void Bot::executeAction()
     }
     */
 
-
+    /*
     // Find region we own that has largest number of armies
     if (owned_regions.size() > 0)
     {
@@ -306,6 +306,22 @@ void Bot::executeAction()
     {
       std::cout << "No moves\n" ;
     }
+    */
+
+
+    // Use UCT to determine moves
+    uct->createTree(bot_name, regions);
+    std::string result;
+    if(uct->execute(1000, result))
+    {
+      std::cout << result << "\n";
+      std::cout.flush();
+    }
+    else
+    {
+      std::cout << "No moves\n";
+    }
+
   }
 
   phase.clear();

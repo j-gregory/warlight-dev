@@ -12,7 +12,14 @@ class State
 {
  public:
   State();
+  State(std::string n, std::vector<Region> r);
   ~State();
+
+  std::string getName()                 const { return name; }
+  std::vector<Region> getRegionsOwned() const { return regions_owned; }
+
+  void setName(std::string n);
+  void setRegionsOwned(std::vector<Region> r);
 
  protected:
   std::string name;

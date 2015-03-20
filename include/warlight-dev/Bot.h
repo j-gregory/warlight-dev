@@ -12,6 +12,7 @@
 #include "Parser.h"
 #include "Region.h"
 #include "SuperRegion.h"
+#include "UCTManager.h"
 
 class Bot
 {
@@ -36,6 +37,8 @@ class Bot
 
   Parser parser;
   std::string phase;
+
+  UCTManager* uct;
 
  public:
   Bot();
