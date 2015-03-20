@@ -1,6 +1,7 @@
 #ifndef __NODE_H_INCLUDED__
 #define __NODE_H_INCLUDED__
 
+#include <stdlib.h>
 #include <vector>
 
 class Node
@@ -12,6 +13,7 @@ class Node
  protected:
   Node *parent;
   std::vector<Node*> children;
+  float win_percentage;
 
 };
 
