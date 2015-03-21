@@ -310,16 +310,9 @@ void Bot::executeAction()
 
 
     // Use UCT to determine moves
-    std::string result;
-    if(uct->execute(bot_name, regions, 1000, result))
-    {
-      std::cout << result << "\n";
-      std::cout.flush();
-    }
-    else
-    {
-      std::cout << "No moves\n";
-    }
+    std::string result  = uct->execute(bot_name, regions, 1000);
+    std::cout << result << "\n";
+    std::cout.flush();
   }
 
   phase.clear();

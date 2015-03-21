@@ -10,72 +10,58 @@ UCTManager::~UCTManager()
 
 }
 
-bool UCTManager::execute(std::string name, std::vector<Region> regions, double timelimit, std::string result)
+std::string UCTManager::execute(std::string name, std::vector<Region> regions, double timelimit)
 {
   std::cout << "Executing UCT\n";
-
   std::cout << "Initializing tree\n";
+
   // Create root node with current state of game
-
-  /*
-  tree<State> test;
-  test.insert(test.begin(), State("test"));
-  tree<State>::iterator itr2 = test.insert(test.end(), State("second"));
-  tree<State>::iterator itr3 = test.insert(test.end(), State("third"));
-  tree<State>::iterator printout = test.begin();
-  while(printout != test.end())
-  {
-    std::cout << (*printout).getName() << std::endl;
-    ++printout;
-  }
-  //kptree::print_tree_bracketed(test, std::cout);
-  */
-
   tree<State> game_tree;
-  game_tree.insert(game_tree.begin(), State("root"));
-  tree<State>::iterator itr2 = game_tree.insert(game_tree.end(), State("second"));
-  tree<State>::iterator itr3 = game_tree.insert(game_tree.end(), State("third"));
-  tree<State>::iterator printout = game_tree.begin();
-  std::cout << "Tree built, now printout\n";
-  while(printout != game_tree.end())
-  {
-    std::cout << (*printout).getName() << "  " << (*printout).getWinPercentage() << std::endl;
-    
-    ++printout;
-  }
+  game_tree.insert(game_tree.begin(), State(name, regions));
+  //tree<State>::iterator itr2 = game_tree.insert(game_tree.end(), State("second"));
+  //tree<State>::iterator itr3 = game_tree.insert(game_tree.end(), State("third"));
+  std::cout << "Tree initialization complete\n";
+  //kptree::print_tree_bracketed(test, std::cout);
+  printTree(game_tree);
 
+  // Selection - Choose "random" branch to traverse (should eventually use win_percentage)
   
-  std::cout << "Initialization complete\n";
+  // Expansion - Expand path by one node using simulation
 
-  /*
-  tree<Node>::iterator loc = find(root.begin(), root.end(), to_add);
-  if(loc != root.end()) 
-  {
-    tree<Node>::sibling_iterator sib = root.begin(loc);
-    while(sib != root.end(loc)) 
-    {
-      cout << (*sib).getName() << endl;
-      ++sib;
-    }
-  }
-  */
+  // Simulation - Simulate the rest of the game to determine the win_percentage of the node we added
 
+  // Back Propagation - Update all parent nodes using win_percentage information we gained
 
-  result = name + "attack/transfer random1 random2 5";
-
-
-  // Selection
-  
-  // Expansion
-
-  // Simulation
-
-  // Back Propagation
-
-  // Choose best move
-
-  // Save move to <result>
-
-  return true;
+  // Find our best move - Find child node with largest win_percentage, return that command
+  return (name + findBestMove(game_tree));
 }
 
+std::string UCTManager::findBestMove(tree<State> game_tree)
+{
+  // No moves by default to save time
+  std::string best_move = "No moves\n";
+  // Iterate immediate children, find highest win_percentage
+  double temp_win_percentage = 0;
+  tree<State>::sibling_iterator child = game_tree.begin();
+  while(child != game_tree.end())
+  {
+    if((*child).getWinPercentage() > temp_win_percentage)
+    {
+      best_move = " attack/transfer random1 random2 5";
+      temp_win_percentage = (*child).getWinPercentage();
+    }
+    ++child;
+  }
+  return best_move;
+}
+
+void UCTManager::printTree(tree<State> game_tree)
+{
+  tree<State>::iterator node = game_tree.begin();
+  while(node != game_tree.end())
+  {
+    std::cout << "Owner: "    << (*node).getName() 
+	      << "   Win %: " << (*node).getWinPercentage() << std::endl;
+    ++node;
+  }  
+}

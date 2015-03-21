@@ -10,7 +10,7 @@ State::State(std::string n) : win_percentage(0.5)
   name = n;
 }
 
-State::State(std::string n, std::vector<Region> r)
+State::State(std::string n, std::vector<Region> r) : win_percentage(0.5)
 {
   name = n;
   regions_owned = r;

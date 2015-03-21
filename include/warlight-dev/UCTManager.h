@@ -19,8 +19,10 @@ class UCTManager
   UCTManager();
   ~UCTManager();
 
-  bool execute(std::string name, std::vector<Region> region, double timelimit, std::string result);
-  //findBestMove();
+  std::string execute(std::string name, std::vector<Region> region, double timelimit);
+  std::string findBestMove(tree<State> game_tree);
+
+  void printTree(tree<State> game_tree);
 
  protected:
   //tree<State> game_tree;
