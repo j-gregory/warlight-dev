@@ -12,11 +12,14 @@ class State
 {
  public:
   State();
+  State(std::string n);
   State(std::string n, std::vector<Region> r);
+  State(std::string n, std::vector<Region> r, double p);
   ~State();
 
   std::string getName()                 const { return name; }
   std::vector<Region> getRegionsOwned() const { return regions_owned; }
+  float getWinPercentage()              const { return win_percentage; }
 
   void setName(std::string n);
   void setRegionsOwned(std::vector<Region> r);
@@ -24,7 +27,7 @@ class State
  protected:
   std::string name;
   std::vector<Region> regions_owned;
-
+  float win_percentage;
 };
 
 #endif  // __STATE_H_INCLUDED__

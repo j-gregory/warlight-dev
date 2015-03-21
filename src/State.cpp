@@ -1,14 +1,26 @@
 #include "State.h"
 
-State::State()
+State::State() : win_percentage(0.5)
 {
+  name = "";
+}
 
+State::State(std::string n) : win_percentage(0.5)
+{
+  name = n;
 }
 
 State::State(std::string n, std::vector<Region> r)
 {
   name = n;
   regions_owned = r;
+}
+
+State::State(std::string n, std::vector<Region> r, double p)
+{
+  name = n;
+  regions_owned = r;
+  win_percentage = p;
 }
 
 State::~State()
