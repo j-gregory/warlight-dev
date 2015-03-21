@@ -13,6 +13,10 @@
 #include "Region.h"
 #include "State.h"
 
+typedef tree<State> Tree;
+typedef tree<State>::iterator TreeIterator;
+typedef tree<State>::sibling_iterator TreeSiblingIterator;
+
 class UCTManager
 {
  public:
@@ -20,9 +24,9 @@ class UCTManager
   ~UCTManager();
 
   std::string execute(std::string name, std::vector<Region> region, double timelimit);
-  std::string findBestMove(tree<State> game_tree);
+  std::string findBestMove(Tree game_tree);
 
-  void printTree(tree<State> game_tree);
+  void printTree(Tree game_tree);
 
  protected:
   //tree<State> game_tree;

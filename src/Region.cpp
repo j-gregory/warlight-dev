@@ -41,8 +41,21 @@ void Region::addNeighbors(int n)
   setNumNeighbors(neighbors.size());
 }
 
+void Region::print()
+{
+  // TODO
+}
 
-
+bool operator== (const Region& r1, const Region& r2)
+{
+  return ( (r1.neighbors == r2.neighbors) && 
+	   //std::equal(r1.neighbors.begin(), r1.neighbors.end(), r2.neighbors) &&
+	   (r1.id == r2.id) && 
+	   (r1.num_neighbors == r2.num_neighbors) &&
+	   (r1.super_region == r2.super_region) &&
+	   (r1.owner == r2.owner) &&
+	   (r1.armies == r2.armies) );
+}
 
 
 

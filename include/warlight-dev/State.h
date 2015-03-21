@@ -17,12 +17,16 @@ class State
   State(std::string n, std::vector<Region> r, double p);
   ~State();
 
+  /* Getters */
   std::string getName()                 const { return name; }
   std::vector<Region> getRegionsOwned() const { return regions_owned; }
   double getWinPercentage()             const { return win_percentage; }
 
+  /* Setters */
   void setName(std::string n);
   void setRegionsOwned(std::vector<Region> r);
+
+  friend bool operator== (const State& s1, const State& s2);
 
  protected:
   std::string name;

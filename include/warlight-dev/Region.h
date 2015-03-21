@@ -34,6 +34,8 @@ class Region
   void addNeighbors(int n);
   void print();
 
+  friend bool operator== (const Region& r1, const Region& r2);
+
  protected:
 
  private:
