@@ -10,9 +10,10 @@ UCTManager::~UCTManager()
 
 }
 
-
-void UCTManager::createTree(std::string name, std::vector<Region> regions)
+bool UCTManager::execute(std::string name, std::vector<Region> regions, double timelimit, std::string result)
 {
+  std::cout << "Executing UCT\n";
+
   std::cout << "Initializing tree\n";
   // Create root node with current state of game
 
@@ -46,7 +47,6 @@ void UCTManager::createTree(std::string name, std::vector<Region> regions)
   
   std::cout << "Initialization complete\n";
 
-  //std::cout << "Printing the node we added\n";
   /*
   tree<Node>::iterator loc = find(root.begin(), root.end(), to_add);
   if(loc != root.end()) 
@@ -59,14 +59,9 @@ void UCTManager::createTree(std::string name, std::vector<Region> regions)
     }
   }
   */
-}
 
-bool UCTManager::execute(double timelimit, std::string result)
-{
-  std::cout << "Executing UCT\n";
-  //tree<Node>::iterator top =  root.begin();
-  
-  //result = (*top).getOwner() + "attack/transfer random1 random2 5";
+
+  result = name + "attack/transfer random1 random2 5";
 
 
   // Selection

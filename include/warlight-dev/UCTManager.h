@@ -19,8 +19,7 @@ class UCTManager
   UCTManager();
   ~UCTManager();
 
-  void createTree(std::string name, std::vector<Region> regions);
-  bool execute(double timelimit, std::string result);
+  bool execute(std::string name, std::vector<Region> region, double timelimit, std::string result);
   //findBestMove();
 
  protected:

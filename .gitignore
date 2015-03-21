@@ -1,4 +1,6 @@
 # Custom
+backup/*
+build/*
 submission/v*
 
 # Compiled Object files

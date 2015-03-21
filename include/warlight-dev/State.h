@@ -19,7 +19,7 @@ class State
 
   std::string getName()                 const { return name; }
   std::vector<Region> getRegionsOwned() const { return regions_owned; }
-  float getWinPercentage()              const { return win_percentage; }
+  double getWinPercentage()             const { return win_percentage; }
 
   void setName(std::string n);
   void setRegionsOwned(std::vector<Region> r);
@@ -27,7 +27,7 @@ class State
  protected:
   std::string name;
   std::vector<Region> regions_owned;
-  float win_percentage;
+  double win_percentage;
 };
 
 #endif  // __STATE_H_INCLUDED__
