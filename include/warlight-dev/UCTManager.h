@@ -16,6 +16,7 @@
 typedef tree<State> Tree;
 typedef tree<State>::iterator TreeIterator;
 typedef tree<State>::sibling_iterator TreeSiblingIterator;
+typedef tree<State>::leaf_iterator TreeLeafIterator;
 
 class UCTManager
 {
@@ -24,6 +25,7 @@ class UCTManager
   ~UCTManager();
 
   std::string execute(std::string name, std::vector<Region> region, double timelimit);
+  std::string getRandomMove(State& state, State& result);
   std::string findBestMove(Tree game_tree);
 
   void printTree(Tree game_tree);

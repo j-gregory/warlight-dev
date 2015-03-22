@@ -22,38 +22,76 @@ std::string UCTManager::execute(std::string name, std::vector<Region> regions, d
   //kptree::print_tree_bracketed(test, std::cout);
   printTree(game_tree);
 
-  // Selection - Traverse "random" branch to leaf node (should eventually use win_percentage)
-  TreeSiblingIterator leaf = game_tree.begin();
-  while(leaf.number_of_children() > 0)
+  /*! ------------------------------------------------------------------------------
+   *  SELECTION
+   *  Traverse "random" branch to leaf node (should eventually use win_percentage)
+   *  ------------------------------------------------------------------------------
+   */
+  TreeSiblingIterator node_itr = game_tree.begin();
+  while(node_itr.number_of_children() > 0)
   {
     int index = 0;
-    int random = rand() % leaf.number_of_children();
-    std::cout << "Current node has " << leaf.number_of_children() << " children" << std::endl;
-    std::cout << "Randomly chose " << index << " to traverse " << std::endl;
+    int random = rand() % node_itr.number_of_children();
+    std::cout << "Current node has " << node_itr.number_of_children() << " children" << std::endl;
+    std::cout << "Randomly chose " << random << " to traverse " << std::endl;
     while(index != random)
     {
-      leaf++;
+      node_itr++;
       index++;
     }
-    // ///////
-    // This doesn't seem right....
-    TreeIterator loc = std::find(game_tree.begin(), game_tree.end(), (*leaf));
-    leaf = game_tree.begin(loc);
-    // ///////
+    // Need this ... no?
+    //TreeIterator loc = std::find(game_tree.begin(), game_tree.end(), (*leaf));
+    //leaf = game_tree.begin(loc);
   }
-  std::cout << "Got to leaf node: " << (*leaf).getName() << std::endl; 
-  
-  // Expansion - Expand path by one node for a random move
-  //tree<State>::iterator itr2 = game_tree.insert(game_tree.end(), State("second"));
+  std::cout << "Randomly selected leaf: " << (*node_itr).getName() << std::endl;
 
-  // Simulation - Simulate the rest of the game to determine the win_percentage of the node we added
 
-  // Back Propagation - Update all parent nodes using win_percentage information we gained
+  /*! ------------------------------------------------------------------------------
+   *  EXPANSION
+   *  Expand current path by one node representing a random move
+   *  ------------------------------------------------------------------------------
+   */
+  State result;
+  std::string move = getRandomMove((*node_itr), result);
+  std::cout << "Executed random move: " << move;
+  // Add new node to tree, iterate there
+  node_itr = game_tree.append_child(node_itr, result);
+  std::cout << "Now at new leaf: " << (*node_itr).getName() << std::endl;
+
+
+  /*! ------------------------------------------------------------------------------
+   *  SIMULATION
+   *  Simulation the rest of the game to determine the win_percentage of added node
+   *  ------------------------------------------------------------------------------
+   */
+  int steps = 0;
+  while(steps < 5)
+  {
+    //simulateTurn();
+    steps++;
+  }
+
+
+  /*! ------------------------------------------------------------------------------
+   *  BACK PROPAGATION
+   *  Update all parent nodes using win_percentage information we gained
+   *  ------------------------------------------------------------------------------
+   */
+  //while(curr != game_tree.begin())
+  //{
+    //updateWinPercentage();
+    //curr = curr.parent;     // Not curr--;  ??
+  //}
 
   // Find our best move - Find child node with largest win_percentage, return that command
   return (name + findBestMove(game_tree));
 }
 
+std::string UCTManager::getRandomMove(State& state, State& result)
+{
+  result.setName("Test");
+  return "No moves\n";
+}
 
 
 std::string UCTManager::findBestMove(Tree game_tree)
@@ -86,3 +124,34 @@ void UCTManager::printTree(Tree game_tree)
     ++node;
   }  
 }
+
+
+
+
+  // /////////////////////
+  // Second implementation of Selection process
+  // Probably less efficient in the long term
+  
+  /*
+  // Iterate all leafs and count total
+  int number_of_leafs = 0;
+  TreeLeafIterator leaf_itr = game_tree.begin();
+  while(leaf_itr != game_tree.end())
+  {
+    number_of_leafs++;
+    leaf_itr++;
+  }
+
+  // Pick random leaf
+  int index = 0;
+  int random = rand() % number_of_leafs;
+  std::cout << "Randomly selected leaf at index: " << random << std::endl;
+  leaf_itr = game_tree.begin();
+  while(index != random)
+  {
+    leaf_itr++;
+    index++;
+  }
+  std::cout << "There are " << number_of_leafs << " leafs\n";
+  std::cout << "Got to leaf node: " << (*leaf_itr).getName() << std::endl; 
+  */
