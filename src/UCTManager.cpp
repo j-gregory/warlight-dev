@@ -89,8 +89,15 @@ std::string UCTManager::execute(std::string name, std::vector<Region> regions, d
 
 std::string UCTManager::getRandomMove(State& state, State& result)
 {
+  std::string rand_move = "No moves\n";
+  
+  // Look at state.regions_owned, pick a random valid move
+
+  // Produce result for random valid move
   result.setName("Test");
-  return "No moves\n";
+  //result.setRegionsOwned();
+  result.setMove(rand_move);
+  return rand_move;
 }
 
 
