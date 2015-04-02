@@ -1,5 +1,7 @@
 #include "UCTManager.h"
 
+#include "string_util.hpp"
+
 UCTManager::UCTManager()
 {
 
@@ -51,9 +53,13 @@ std::string UCTManager::execute(std::string name, std::vector<Region> regions, d
    *  Expand current path by one node representing a random move
    *  ------------------------------------------------------------------------------
    */
-  State result;
-  std::string move = getRandomMove((*node_itr), result);
+  std::string move = getRandomMove(*node_itr);
+
+  // Produce resulting state for random valid move by simulating turn
   std::cout << "Executed random move: " << move;
+  State result;
+  simulateTurn((*node_itr), move, result);
+
   // Add new node to tree, iterate there
   node_itr = game_tree.append_child(node_itr, result);
   std::cout << "Now at new leaf: " << (*node_itr).getName() << std::endl;
@@ -61,13 +67,14 @@ std::string UCTManager::execute(std::string name, std::vector<Region> regions, d
 
   /*! ------------------------------------------------------------------------------
    *  SIMULATION
-   *  Simulation the rest of the game to determine the win_percentage of added node
+   *  Simulate the rest of the game to determine the win_percentage of added node
    *  ------------------------------------------------------------------------------
    */
   int steps = 0;
+  // while(time is almost up)
   while(steps < 5)
   {
-    //simulateTurn();
+    // @TODO: simulate();
     steps++;
   }
 
@@ -77,29 +84,121 @@ std::string UCTManager::execute(std::string name, std::vector<Region> regions, d
    *  Update all parent nodes using win_percentage information we gained
    *  ------------------------------------------------------------------------------
    */
-  //while(curr != game_tree.begin())
+  //while(node_itr != game_tree.begin())
   //{
-    //updateWinPercentage();
-    //curr = curr.parent;     // Not curr--;  ??
+    //Calculate new win percentage
+    //double new_win_percentage;
+    //(*node_itr).setWinPercentage(new_win_percentage);
+    //curr = curr.parent;
   //}
 
   // Find our best move - Find child node with largest win_percentage, return that command
   return (name + findBestMove(game_tree));
 }
 
-std::string UCTManager::getRandomMove(State& state, State& result)
+std::string UCTManager::getRandomMove(State& state)
 {
   std::string rand_move = "No moves\n";
   
   // Look at state.regions_owned, pick a random valid move
-
-  // Produce result for random valid move
-  result.setName("Test");
-  //result.setRegionsOwned();
-  result.setMove(rand_move);
-  return rand_move;
+  int from_id = 0;
+  int from_index = 0;
+  int max_armies = 0;
+  int temp_region = 0;
+  int temp_armies = 0;
+  std::vector<Region> owned_regions = state.getRegionsOwned();
+  for(int i = 0; i < (int)owned_regions.size(); i++)
+  {
+    temp_region = owned_regions[i].getID();
+    temp_armies = owned_regions[i].getNumArmies();
+    if (temp_armies > max_armies)
+    {
+      from_id = temp_region;
+      from_index = i;
+      max_armies = temp_armies;
+    }
+  }
+  
+  // Find (random) adjacent region
+  int owned_region = owned_regions[from_index].getID();
+  int rand_index = rand() % owned_regions[owned_region].getNumNeighbors();
+  int to = owned_regions[owned_region].getNeighbors()[rand_index];
+  
+  return (owned_regions[from_index].getOwner() + 
+	  " attack/transfer " + 
+	  std::to_string(from_id) + " " + 
+	  std::to_string(to) + " " + 
+	  std::to_string(max_armies-1) + "\n");
 }
 
+void UCTManager::simulateTurn(State& state, std::string move, State& result)
+{
+  std::cout << "Parsing " << move << std::endl;
+  std::vector<std::string> tokens = split(move, ' ');
+  if(tokens[1] == "attack/transfer")
+  {
+    int from = std::stoi(tokens[2]);
+    int to = std::stoi(tokens[3]);
+    int attack_armies = std::stoi(tokens[4]);
+    // @TODO: Need way to get number of armies that will be defending attack...
+    int defend_armies = 5;
+    
+    std::cout << "Simulating attack from region " << from 
+	      << " with " << attack_armies << " armies " 
+	      << " to region " << to 
+	      << " with " << defend_armies << " armies " << std::endl;
+    
+    int survive_attack = 0;
+    int survive_defend = 0;
+    simulateBattle(attack_armies, defend_armies, survive_attack, survive_defend);
+    
+    std::cout << "After battle: " 
+	      << survive_attack << " armies survived attack   "
+	      << survive_defend << " armies survived defend " << std::endl;
+    
+    if(survive_defend == 0)
+    {
+      std::cout << "Attack: SUCCESS\n";
+      // @TODO: Set new number of armies in region attacked from
+      //state.setArmies();
+      // @TODO: Set new number of armies in newly-acquired region
+      //state.setArmies();
+      // @TODO: Add newly-acquired region to regions owned
+      //result.setRegionsOwned();
+    }
+    else
+    {
+      std::cout << "Attack: FAILED\n";
+      // @TODO: Set new number of armies in region attacked from
+      //result.setArmies();
+    }
+  }
+
+  result.setName("Test");
+  result.setMove(move);
+  //result.setWinPercentage();
+}
+
+void UCTManager::simulateBattle(int attack_armies, int defend_armies, int& survive_attack, int&survive_defend)
+{
+  double d1 = 0.6*attack_armies;
+  double d2 = 0.6*attack_armies;
+  double defend_destroyed = ceil((0.84*d1)+(0.16*d2));
+
+  double a1 = 0.7*defend_armies;
+  double a2 = 0.7*defend_armies;
+  double attack_destroyed = ceil((0.84*a1)+(0.16*a2));
+  
+  survive_attack = attack_armies - attack_destroyed;
+  survive_defend = defend_armies - defend_destroyed;
+  
+  std::cout << "attack_armies: " << attack_armies 
+	    << " attack_destroyed: " << attack_destroyed 
+	    << " survive_attack: " << survive_attack << std::endl;
+  std::cout << "defend_armies: " << defend_armies
+	    << " defend_destroyed: " << defend_destroyed
+	    << " survive_defend: " << survive_defend << std::endl;
+}
 
 std::string UCTManager::findBestMove(Tree game_tree)
 {
