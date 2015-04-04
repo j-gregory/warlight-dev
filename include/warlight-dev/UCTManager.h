@@ -24,13 +24,13 @@ class UCTManager
   UCTManager();
   ~UCTManager();
 
-  std::string execute(std::string name, std::vector<Region> region, double timelimit);
+  std::string execute(std::string name, std::vector<Region> regions, double timelimit);
   void printTree(Tree game_tree);
 
  protected:
   //tree<State> game_tree;
   std::string getRandomMove(State& state);
-  void simulateTurn(State& state, std::string move, State& result);
+  void simulateTurn(State& state, std::string move, std::vector<Region> regions, State& result);
   void simulateBattle(int attack_armies, int defend_armies, int& survive_attack, int& survive_defend);
   std::string findBestMove(Tree game_tree);
 

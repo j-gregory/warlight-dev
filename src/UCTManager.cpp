@@ -58,7 +58,7 @@ std::string UCTManager::execute(std::string name, std::vector<Region> regions, d
   // Produce resulting state for random valid move by simulating turn
   std::cout << "Executed random move: " << move;
   State result;
-  simulateTurn((*node_itr), move, result);
+  simulateTurn((*node_itr), move, regions, result);
 
   // Add new node to tree, iterate there
   node_itr = game_tree.append_child(node_itr, result);
@@ -101,6 +101,9 @@ std::string UCTManager::getRandomMove(State& state)
   std::string rand_move = "No moves\n";
   
   // Look at state.regions_owned, pick a random valid move
+
+  /*  ------------------------------------------------ */
+  /* Implementation for choosing region with largest number of armies */
   int from_id = 0;
   int from_index = 0;
   int max_armies = 0;
@@ -118,6 +121,7 @@ std::string UCTManager::getRandomMove(State& state)
       max_armies = temp_armies;
     }
   }
+  /*  ------------------------------------------------ */
   
   // Find (random) adjacent region
   int owned_region = owned_regions[from_index].getID();
@@ -131,7 +135,7 @@ std::string UCTManager::getRandomMove(State& state)
 	  std::to_string(max_armies-1) + "\n");
 }
 
-void UCTManager::simulateTurn(State& state, std::string move, State& result)
+void UCTManager::simulateTurn(State& state, std::string move, std::vector<Region> regions, State& result)
 {
   std::cout << "Parsing " << move << std::endl;
   std::vector<std::string> tokens = split(move, ' ');
@@ -140,13 +144,12 @@ void UCTManager::simulateTurn(State& state, std::string move, State& result)
     int from = std::stoi(tokens[2]);
     int to = std::stoi(tokens[3]);
     int attack_armies = std::stoi(tokens[4]);
-    // @TODO: Need way to get number of armies that will be defending attack...
-    int defend_armies = 5;
+    int defend_armies = regions[to].getNumArmies();
     
     std::cout << "Simulating attack from region " << from 
-	      << " with " << attack_armies << " armies " 
+	      << " with " << attack_armies << " armies" 
 	      << " to region " << to 
-	      << " with " << defend_armies << " armies " << std::endl;
+	      << " that has " << defend_armies << " armies " << std::endl;
     
     int survive_attack = 0;
     int survive_defend = 0;
@@ -155,23 +158,22 @@ void UCTManager::simulateTurn(State& state, std::string move, State& result)
     std::cout << "After battle: " 
 	      << survive_attack << " armies survived attack   "
 	      << survive_defend << " armies survived defend " << std::endl;
-    
+
+    // Set new number of armies in region attacked from    
+    int total_armies = state.getRegionsOwned()[from].getNumArmies();
+    int lost_armies = attack_armies-survive_attack;
+    int remaining_armies = total_armies-lost_armies-survive_attack;
+    //state.setArmies(remaining_armies);
+
     if(survive_defend == 0)
     {
       std::cout << "Attack: SUCCESS\n";
-      // @TODO: Set new number of armies in region attacked from
-      //state.setArmies();
-      // @TODO: Set new number of armies in newly-acquired region
-      //state.setArmies();
+      // Set number of armies in newly-acquired region
+      //result.setArmies(survive_attack);
       // @TODO: Add newly-acquired region to regions owned
       //result.setRegionsOwned();
     }
-    else
-    {
-      std::cout << "Attack: FAILED\n";
-      // @TODO: Set new number of armies in region attacked from
-      //result.setArmies();
-    }
+    else std::cout << "Attack: FAILED\n";
   }
 
   result.setName("Test");
@@ -181,6 +183,9 @@ void UCTManager::simulateTurn(State& state, std::string move, State& result)
 
 void UCTManager::simulateBattle(int attack_armies, int defend_armies, int& survive_attack, int&survive_defend)
 {
+  // @TODO: Improve accuracy of battle simulation
+  //        Current implementation does not handle battles where one side will clearly win (6->2)
+  //        Should instead incrementally calculate and check to see if defense has lost
   double d1 = 0.6*attack_armies;
   double d2 = 0.6*attack_armies;
   double defend_destroyed = ceil((0.84*d1)+(0.16*d2));
@@ -191,6 +196,7 @@ void UCTManager::simulateBattle(int attack_armies, int defend_armies, int& survi
   
   survive_attack = attack_armies - attack_destroyed;
   survive_defend = defend_armies - defend_destroyed;
+  if(survive_defend < 0) survive_defend = 0;
   
   std::cout << "attack_armies: " << attack_armies 
 	    << " attack_destroyed: " << attack_destroyed 
