@@ -1,7 +1,6 @@
 #ifndef __UCTMANAGER_H_INCLUDED__
 #define __UCTMANAGER_H_INCLUDED__ 
 
-//#include <algorithm>
 #include <iostream>
 #include <stdio.h>
 #include <string>
@@ -28,9 +27,9 @@ class UCTManager
   void printTree(Tree game_tree);
 
  protected:
-  //tree<State> game_tree;
   std::string getRandomMove(State& state);
-  void simulateTurn(State& state, std::string move, std::vector<Region> regions, State& result);
+  void simulateOurTurn(State& state, std::vector<Region> regions, State& result);
+  void simulateOpponentsTurn(State& state, std::vector<Region> regions, State& result);
   void simulateBattle(int attack_armies, int defend_armies, int& survive_attack, int& survive_defend);
   std::string findBestMove(Tree game_tree);
 

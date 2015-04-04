@@ -24,6 +24,10 @@ std::string UCTManager::execute(std::string name, std::vector<Region> regions, d
   //kptree::print_tree_bracketed(test, std::cout);
   printTree(game_tree);
 
+
+  /* =============================================================================== */
+  //while(time is almost up)
+
   /*! ------------------------------------------------------------------------------
    *  SELECTION
    *  Traverse "random" branch to leaf node (should eventually use win_percentage)
@@ -53,12 +57,8 @@ std::string UCTManager::execute(std::string name, std::vector<Region> regions, d
    *  Expand current path by one node representing a random move
    *  ------------------------------------------------------------------------------
    */
-  std::string move = getRandomMove(*node_itr);
-
-  // Produce resulting state for random valid move by simulating turn
-  std::cout << "Executed random move: " << move;
   State result(name, regions, 0.5);
-  simulateTurn((*node_itr), move, regions, result);
+  simulateOurTurn((*node_itr), regions, result);
 
   // Add new node to tree, iterate there
   node_itr = game_tree.append_child(node_itr, result);
@@ -70,11 +70,18 @@ std::string UCTManager::execute(std::string name, std::vector<Region> regions, d
    *  Simulate the rest of the game to determine the win_percentage of added node
    *  ------------------------------------------------------------------------------
    */
+  State curr = result;
+  State next;
   int steps = 0;
-  // while(time is almost up)
+  // while(some amount of time)
   while(steps < 5)
   {
-    // @TODO: simulate();
+    // Their turn? Guess one of their moves
+    if(steps%2 == 0) simulateOpponentsTurn(curr, regions, next);
+    // Our turn? Simulate a random move
+    else simulateOurTurn(curr, regions, next);
+
+    curr = next;
     steps++;
   }
 
@@ -84,12 +91,16 @@ std::string UCTManager::execute(std::string name, std::vector<Region> regions, d
    *  Update all parent nodes using win_percentage information we gained
    *  ------------------------------------------------------------------------------
    */
-  //while(node_itr != game_tree.begin())
-  //{
+  while(node_itr != game_tree.begin())
+  {
     //Calculate new win percentage
-    //double new_win_percentage;
-    //(*node_itr).setWinPercentage(new_win_percentage);
-    //curr = curr.parent;
+    double new_win_percentage = 0.5;
+    (*node_itr).setWinPercentage(new_win_percentage);
+    //node_itr = node_itr.parent;
+  }
+
+  // DONE SINGLE ITERATION OF UCT
+
   //}
 
   // Find our best move - Find child node with largest win_percentage, return that command
@@ -135,9 +146,14 @@ std::string UCTManager::getRandomMove(State& state)
 	  std::to_string(max_armies-1) + "\n");
 }
 
-void UCTManager::simulateTurn(State& state, std::string move, std::vector<Region> regions, State& result)
+void UCTManager::simulateOurTurn(State& state, std::vector<Region> regions, State& result)
 {
-  std::cout << "Parsing " << move << std::endl;
+  // Get random, valid move
+  std::string move = getRandomMove(state);
+  
+  // Produce resulting state for random valid move by simulating turn
+  std::cout << "Executing random move: " << move;
+
   std::vector<std::string> tokens = split(move, ' ');
   if(tokens[1] == "attack/transfer")
   {
@@ -182,6 +198,12 @@ void UCTManager::simulateTurn(State& state, std::string move, std::vector<Region
   result.setMove(move);
   // @TODO: Win percentage calculation based on battle?
   result.setWinPercentage(0.5);
+}
+
+void UCTManager::simulateOpponentsTurn(State& state, std::vector<Region> regions, State& result)
+{
+  // @TODO: Implement
+  result = state;
 }
 
 void UCTManager::simulateBattle(int attack_armies, int defend_armies, int& survive_attack, int&survive_defend)
