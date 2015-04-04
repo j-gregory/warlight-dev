@@ -57,7 +57,7 @@ std::string UCTManager::execute(std::string name, std::vector<Region> regions, d
 
   // Produce resulting state for random valid move by simulating turn
   std::cout << "Executed random move: " << move;
-  State result;
+  State result(name, regions, 0.5);
   simulateTurn((*node_itr), move, regions, result);
 
   // Add new node to tree, iterate there
@@ -100,7 +100,7 @@ std::string UCTManager::getRandomMove(State& state)
 {
   std::string rand_move = "No moves\n";
   
-  // Look at state.regions_owned, pick a random valid move
+  // Look at state.owned_regions, pick a random valid move
 
   /*  ------------------------------------------------ */
   /* Implementation for choosing region with largest number of armies */
@@ -109,7 +109,7 @@ std::string UCTManager::getRandomMove(State& state)
   int max_armies = 0;
   int temp_region = 0;
   int temp_armies = 0;
-  std::vector<Region> owned_regions = state.getRegionsOwned();
+  std::vector<Region> owned_regions = state.getOwnedRegions();
   for(int i = 0; i < (int)owned_regions.size(); i++)
   {
     temp_region = owned_regions[i].getID();
@@ -160,25 +160,28 @@ void UCTManager::simulateTurn(State& state, std::string move, std::vector<Region
 	      << survive_defend << " armies survived defend " << std::endl;
 
     // Set new number of armies in region attacked from    
-    int total_armies = state.getRegionsOwned()[from].getNumArmies();
-    int lost_armies = attack_armies-survive_attack;
-    int remaining_armies = total_armies-lost_armies-survive_attack;
-    //state.setArmies(remaining_armies);
+    //int total_armies = state.getOwnedRegions()[from].getNumArmies();
+    //int lost_armies = attack_armies-survive_attack;
+    //int remaining_armies = total_armies-lost_armies-survive_attack;
+    int remaining_armies = 
+      state.getOwnedRegions()[from].getNumArmies() - attack_armies - (2*survive_attack);
+    state.setArmies(from, remaining_armies);
 
     if(survive_defend == 0)
     {
       std::cout << "Attack: SUCCESS\n";
       // Set number of armies in newly-acquired region
-      //result.setArmies(survive_attack);
-      // @TODO: Add newly-acquired region to regions owned
-      //result.setRegionsOwned();
+      // Add newly-acquired region to regions owned
+      Region winnings = regions[to];
+      winnings.setArmies(survive_attack);
+      result.addNewOwnedRegion(winnings);
     }
     else std::cout << "Attack: FAILED\n";
   }
 
-  result.setName("Test");
   result.setMove(move);
-  //result.setWinPercentage();
+  // @TODO: Win percentage calculation based on battle?
+  result.setWinPercentage(0.5);
 }
 
 void UCTManager::simulateBattle(int attack_armies, int defend_armies, int& survive_attack, int&survive_defend)
