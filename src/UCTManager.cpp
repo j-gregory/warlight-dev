@@ -91,17 +91,17 @@ std::string UCTManager::execute(std::string name, std::vector<Region> regions, d
    *  Update all parent nodes using win_percentage information we gained
    *  ------------------------------------------------------------------------------
    */
+  double updated_win_percentage = next.getWinPercentage();
   while(node_itr != game_tree.begin())
   {
-    //Calculate new win percentage
-    double new_win_percentage = 0.5;
-    (*node_itr).setWinPercentage(new_win_percentage);
-    //node_itr = node_itr.parent;
+    (*node_itr).setWinPercentage(updated_win_percentage);
+    node_itr = game_tree.parent(node_itr);
   }
 
   // DONE SINGLE ITERATION OF UCT
 
   //}
+  /* =============================================================================== */
 
   // Find our best move - Find child node with largest win_percentage, return that command
   return (name + findBestMove(game_tree));
@@ -196,8 +196,8 @@ void UCTManager::simulateOurTurn(State& state, std::vector<Region> regions, Stat
   }
 
   result.setMove(move);
-  // @TODO: Win percentage calculation based on battle?
-  result.setWinPercentage(0.5);
+  double wp = calculateWinPercentage(regions, result);
+  result.setWinPercentage(wp);
 }
 
 void UCTManager::simulateOpponentsTurn(State& state, std::vector<Region> regions, State& result)
@@ -231,6 +231,17 @@ void UCTManager::simulateBattle(int attack_armies, int defend_armies, int& survi
 	    << " survive_defend: " << survive_defend << std::endl;
 }
 
+double UCTManager::calculateWinPercentage(std::vector<Region> regions, State& state)
+{
+  // @TODO: Implement
+
+  // Win percentage calculation - Initial thoughts:
+  // 1) Based on battle?
+  // 2) Based on number of owned regions vs total regions
+  // 3) Based on number of our regions vs opponents regions
+
+  return (state.getOwnedRegions().size() / regions.size());
+}
 std::string UCTManager::findBestMove(Tree game_tree)
 {
   // No moves by default to save time

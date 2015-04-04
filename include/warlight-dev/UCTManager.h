@@ -31,6 +31,7 @@ class UCTManager
   void simulateOurTurn(State& state, std::vector<Region> regions, State& result);
   void simulateOpponentsTurn(State& state, std::vector<Region> regions, State& result);
   void simulateBattle(int attack_armies, int defend_armies, int& survive_attack, int& survive_defend);
+  double calculateWinPercentage(std::vector<Region> regions, State& state);
   std::string findBestMove(Tree game_tree);
 
 };
