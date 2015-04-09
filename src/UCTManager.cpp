@@ -26,7 +26,10 @@ std::string UCTManager::execute(std::string name, std::vector<Region> regions, d
 
 
   /* =============================================================================== */
+  // This will be based on time, but for debuggin purposes just an arbitrary number of iterations
+  int iterations = 0;
   //while(time is almost up)
+  //while(iterations < 10)
 
   /*! ------------------------------------------------------------------------------
    *  SELECTION
@@ -34,10 +37,12 @@ std::string UCTManager::execute(std::string name, std::vector<Region> regions, d
    *  ------------------------------------------------------------------------------
    */
   TreeSiblingIterator node_itr = game_tree.begin();
-  while(node_itr.number_of_children() > 0)
+  int rand_depth = rand() % game_tree.max_depth();    // Traverse to random depth 
+  int curr_depth = 0;                                 // Effectively creates new random branches
+  // If we have reached random depth OR a child node, stop and simulate from this location
+  while((curr_depth < rand_depth) && (node_itr.number_of_children() > 0))
   {
-    // Currently traverses random children until we reach a leaf node
-    // Note: will NOT create new branch unless leaf node ...
+    // Traverse random children
     int index = 0;
     int random = rand() % node_itr.number_of_children();
     std::cout << "Current node has " << node_itr.number_of_children() << " children" << std::endl;
@@ -50,6 +55,7 @@ std::string UCTManager::execute(std::string name, std::vector<Region> regions, d
     // Need this ... no?
     //TreeIterator loc = std::find(game_tree.begin(), game_tree.end(), (*leaf));
     //leaf = game_tree.begin(loc);
+    curr_depth++;
   }
   std::cout << "Randomly selected leaf: " << (*node_itr).getName() << std::endl;
 
