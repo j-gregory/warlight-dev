@@ -36,6 +36,8 @@ std::string UCTManager::execute(std::string name, std::vector<Region> regions, d
   TreeSiblingIterator node_itr = game_tree.begin();
   while(node_itr.number_of_children() > 0)
   {
+    // Currently traverses random children until we reach a leaf node
+    // Note: will NOT create new branch unless leaf node ...
     int index = 0;
     int random = rand() % node_itr.number_of_children();
     std::cout << "Current node has " << node_itr.number_of_children() << " children" << std::endl;
@@ -175,14 +177,16 @@ void UCTManager::simulateOurTurn(State& state, std::vector<Region> regions, Stat
 	      << survive_attack << " armies survived attack   "
 	      << survive_defend << " armies survived defend " << std::endl;
 
-    // Set new number of armies in region attacked from    
-    //int total_armies = state.getOwnedRegions()[from].getNumArmies();
-    //int lost_armies = attack_armies-survive_attack;
-    //int remaining_armies = total_armies-lost_armies-survive_attack;
-    int remaining_armies = 
-      state.getOwnedRegions()[from].getNumArmies() - attack_armies - (2*survive_attack);
+    // The outcome of an attack is ONE of the following:
+    //   1) Win:  Move the surviving armies onto new region
+    //   2) Lose: All attacking armies died, all non-attacking remain safe
+    // By definition: attack_armies = lost + survived
+    // Regardless of how many survive or are lost, the remaining number of armies is (original - attack)
+    // In other words, once allocated for an attack, armies will never return to the region
+    int remaining_armies = state.getOwnedRegions()[from].getNumArmies() - attack_armies;
     state.setArmies(from, remaining_armies);
 
+    // If we won the battle, we need to update the owner and number of armies with how many survived
     if(survive_defend == 0)
     {
       std::cout << "Attack: SUCCESS\n";
@@ -192,7 +196,13 @@ void UCTManager::simulateOurTurn(State& state, std::vector<Region> regions, Stat
       winnings.setArmies(survive_attack);
       result.addNewOwnedRegion(winnings);
     }
-    else std::cout << "Attack: FAILED\n";
+
+    // If we lost the battle, we may update the other region's number of surviving armies (defense)
+    else 
+    {
+      std::cout << "Attack: FAILED\n";
+      //state.setArmies(to, survive_defend);   // Current implementation doesn't support this
+    }
   }
 
   result.setMove(move);
