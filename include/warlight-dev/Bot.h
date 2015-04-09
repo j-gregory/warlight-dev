@@ -12,7 +12,7 @@
 #include "Parser.h"
 #include "Region.h"
 #include "SuperRegion.h"
-#include "UCTManager.h"
+#include "MCTSManager.h"
 
 class Bot
 {
@@ -38,7 +38,7 @@ class Bot
   Parser parser;
   std::string phase;
 
-  UCTManager* uct;
+  MCTSManager* mcts;
 
  public:
   Bot();

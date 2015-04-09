@@ -309,8 +309,8 @@ void Bot::executeAction()
     */
 
 
-    // Use UCT to determine moves
-    std::string result  = uct->execute(bot_name, regions, 1000);
+    // Use MCTS to determine moves
+    std::string result  = mcts->execute(bot_name, regions, 1000);
     std::cout << result << "\n";
     std::cout.flush();
   }

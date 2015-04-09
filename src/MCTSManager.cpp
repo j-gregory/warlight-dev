@@ -1,20 +1,20 @@
-#include "UCTManager.h"
+#include "MCTSManager.h"
 
 #include "string_util.hpp"
 
-UCTManager::UCTManager()
+MCTSManager::MCTSManager()
 {
 
 }
 
-UCTManager::~UCTManager()
+MCTSManager::~MCTSManager()
 {
 
 }
 
-std::string UCTManager::execute(std::string name, std::vector<Region> regions, double timelimit)
+std::string MCTSManager::execute(std::string name, std::vector<Region> regions, double timelimit)
 {
-  std::cout << "Executing UCT\n";
+  std::cout << "Executing MCTS\n";
   std::cout << "Initializing tree\n";
 
   // Create root node with current state of game
@@ -33,7 +33,8 @@ std::string UCTManager::execute(std::string name, std::vector<Region> regions, d
 
   /*! ------------------------------------------------------------------------------
    *  SELECTION
-   *  Traverse "random" branch to leaf node (should eventually use win_percentage)
+   *  UCT (and win percentage) WILL BE USED IN THIS STEP TO BALANCE EXPLORATION AND EXPLOITATION
+   *  For now, traverse "random" branch until random location or child node
    *  ------------------------------------------------------------------------------
    */
   TreeSiblingIterator node_itr = game_tree.begin();
@@ -106,7 +107,7 @@ std::string UCTManager::execute(std::string name, std::vector<Region> regions, d
     node_itr = game_tree.parent(node_itr);
   }
 
-  // DONE SINGLE ITERATION OF UCT
+  // DONE SINGLE ITERATION OF MCTS
 
   //}
   /* =============================================================================== */
@@ -115,7 +116,7 @@ std::string UCTManager::execute(std::string name, std::vector<Region> regions, d
   return (name + findBestMove(game_tree));
 }
 
-std::string UCTManager::getRandomMove(State& state)
+std::string MCTSManager::getRandomMove(State& state)
 {
   std::string rand_move = "No moves\n";
   
@@ -154,7 +155,7 @@ std::string UCTManager::getRandomMove(State& state)
 	  std::to_string(max_armies-1) + "\n");
 }
 
-void UCTManager::simulateOurTurn(State& state, std::vector<Region> regions, State& result)
+void MCTSManager::simulateOurTurn(State& state, std::vector<Region> regions, State& result)
 {
   // Get random, valid move
   std::string move = getRandomMove(state);
@@ -216,13 +217,13 @@ void UCTManager::simulateOurTurn(State& state, std::vector<Region> regions, Stat
   result.setWinPercentage(wp);
 }
 
-void UCTManager::simulateOpponentsTurn(State& state, std::vector<Region> regions, State& result)
+void MCTSManager::simulateOpponentsTurn(State& state, std::vector<Region> regions, State& result)
 {
   // @TODO: Implement
   result = state;
 }
 
-void UCTManager::simulateBattle(int attack_armies, int defend_armies, int& survive_attack, int&survive_defend)
+void MCTSManager::simulateBattle(int attack_armies, int defend_armies, int& survive_attack, int&survive_defend)
 {
   // @TODO: Improve accuracy of battle simulation
   //        Current implementation does not handle battles where one side will clearly win (6->2)
@@ -247,7 +248,7 @@ void UCTManager::simulateBattle(int attack_armies, int defend_armies, int& survi
 	    << " survive_defend: " << survive_defend << std::endl;
 }
 
-double UCTManager::calculateWinPercentage(std::vector<Region> regions, State& state)
+double MCTSManager::calculateWinPercentage(std::vector<Region> regions, State& state)
 {
   // @TODO: Implement
 
@@ -258,7 +259,7 @@ double UCTManager::calculateWinPercentage(std::vector<Region> regions, State& st
 
   return (state.getOwnedRegions().size() / regions.size());
 }
-std::string UCTManager::findBestMove(Tree game_tree)
+std::string MCTSManager::findBestMove(Tree game_tree)
 {
   // No moves by default to save time
   std::string best_move = "No moves\n";
@@ -278,7 +279,7 @@ std::string UCTManager::findBestMove(Tree game_tree)
   return best_move;
 }
 
-void UCTManager::printTree(Tree game_tree)
+void MCTSManager::printTree(Tree game_tree)
 {
   TreeIterator node = game_tree.begin();
   while(node != game_tree.end())

@@ -1,5 +1,5 @@
-#ifndef __UCTMANAGER_H_INCLUDED__
-#define __UCTMANAGER_H_INCLUDED__ 
+#ifndef __MCTSMANAGER_H_INCLUDED__
+#define __MCTSMANAGER_H_INCLUDED__ 
 
 #include <iostream>
 #include <stdio.h>
@@ -17,11 +17,11 @@ typedef tree<State>::iterator TreeIterator;
 typedef tree<State>::sibling_iterator TreeSiblingIterator;
 typedef tree<State>::leaf_iterator TreeLeafIterator;
 
-class UCTManager
+class MCTSManager
 {
  public:
-  UCTManager();
-  ~UCTManager();
+  MCTSManager();
+  ~MCTSManager();
 
   std::string execute(std::string name, std::vector<Region> regions, double timelimit);
   void printTree(Tree game_tree);
@@ -36,4 +36,4 @@ class UCTManager
 
 };
 
-#endif  // __UCTMANAGER_H_INCLUDED__
+#endif  // __MCTSMANAGER_H_INCLUDED__
