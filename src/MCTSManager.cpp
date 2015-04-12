@@ -179,39 +179,52 @@ void MCTSManager::simulateOurTurn(State& state, std::vector<Region> regions, Sta
   {
     int from = std::stoi(tokens[2]);
     int to = std::stoi(tokens[3]);
-    int attack_armies = std::stoi(tokens[4]);
-    int defend_armies = regions[to].getNumArmies();
+    int attacking_armies = std::stoi(tokens[4]);
+    int defending_armies = regions[to].getNumArmies();
     
     std::cout << "Simulating attack from region " << from 
-	      << " with " << attack_armies << " armies" 
+	      << " with " << attacking_armies << " armies" 
 	      << " to region " << to 
-	      << " that has " << defend_armies << " armies " << std::endl;
+	      << " that has " << defending_armies << " armies " << std::endl;
     
-    int survive_attack = 0;
-    int survive_defend = 0;
-    simulateBattle(attack_armies, defend_armies, survive_attack, survive_defend);
+    int attacking_destroyed = 0;
+    int defending_destroyed = 0;
+    simulateBattle(attacking_armies, defending_armies, attacking_destroyed, defending_destroyed);
     
-    std::cout << "After battle: " 
-	      << survive_attack << " armies survived attack   "
-	      << survive_defend << " armies survived defend " << std::endl;
+    int survive_attack = attacking_armies - attacking_destroyed;
+    //if(survive_attack < 0) survive_attack = 0;
+    int survive_defend = defending_armies - defending_destroyed;
+    //if(survive_defend < 0) survive_defend = 0;
+
+    std::cout << "Battle Simulation Results: " << std::endl;
+    std::cout << "attacking_armies: "     << attacking_armies 
+	      << " attacking_destroyed: " << attacking_destroyed 
+	      << " survive_attack: "      << survive_attack << std::endl;
+    std::cout << "defending_armies: "     << defending_armies
+	      << " defending_destroyed: " << defending_destroyed
+	      << " survive_defend: "      << survive_defend << std::endl;
 
     // The outcome of an attack is ONE of the following:
     //   1) Win:  Move the surviving armies onto new region
     //   2) Lose: All attacking armies died, all non-attacking remain safe
-    // By definition: attack_armies = lost + survived
+    // By definition: attacking_armies = lost + survived
     // Regardless of how many survive or are lost, the remaining number of armies is (original - attack)
     // In other words, once allocated for an attack, armies will never return to the region
-    int remaining_armies = state.getOwnedRegions()[from].getNumArmies() - attack_armies;
-    state.setArmies(from, remaining_armies);
 
     // If we won the battle, we need to update the owner and number of armies with how many survived
     if(survive_defend == 0)
     {
       std::cout << "Attack: SUCCESS\n";
+      // Update number of armies in current state
+      int remaining_armies = state.getOwnedRegions()[from].getNumArmies() - attacking_armies;
+      state.setArmies(from, remaining_armies);
+
+      // @TODO: Set region owner
+
       // Set number of armies in newly-acquired region
-      // Add newly-acquired region to regions owned
       Region winnings = regions[to];
       winnings.setArmies(survive_attack);
+      // Add newly-acquired region to regions owned
       result.addNewOwnedRegion(winnings);
     }
 
@@ -219,7 +232,16 @@ void MCTSManager::simulateOurTurn(State& state, std::vector<Region> regions, Sta
     else 
     {
       std::cout << "Attack: FAILED\n";
-      //state.setArmies(to, survive_defend);   // Current implementation doesn't support this
+      // Update number of armies in current state
+      int remaining_attacking_armies = 
+	state.getOwnedRegions()[from].getNumArmies() - attacking_destroyed;  // attacking_armies?
+      state.setArmies(from, remaining_attacking_armies);
+
+      // Update number of armies in defending region
+      int remaining_defending_armies = 
+	state.getOwnedRegions()[to].getNumArmies() - defending_destroyed;
+      // Current implementation doesn't support this because Region 'to' won't be in 'owned'
+      //state.setArmies(to, remaining_defending_armies);   
     }
   }
 
@@ -235,29 +257,50 @@ void MCTSManager::simulateOpponentsTurn(State& state, std::vector<Region> region
   result = state;
 }
 
-void MCTSManager::simulateBattle(int attack_armies, int defend_armies, int& survive_attack, int&survive_defend)
+void MCTSManager::simulateBattle(int attacking_armies, int defending_armies, int& attacking_destroyed, int&defending_destroyed)
 {
-  // @TODO: Improve accuracy of battle simulation
-  //        Current implementation does not handle battles where one side will clearly win (6->2)
-  //        Should instead incrementally calculate and check to see if defense has lost
-  double d1 = 0.6*attack_armies;
-  double d2 = 0.6*attack_armies;
-  double defend_destroyed = ceil((0.84*d1)+(0.16*d2));
+  // According to wiki.warlight.net/index.php/Combat_Basics
+  // Taken directly from doAttack(AttackTransferMove move) method in Warlight2 game engine
+  // Then translated to fit our architecture
+  
+  // If attempting to attack with illegal number of armies (1), do nothing
+  if (attacking_armies <= 1)
+  {
+    attacking_destroyed = 0;
+    defending_destroyed = 0;
+    return;
+  }
 
-  double a1 = 0.7*defend_armies;
-  double a2 = 0.7*defend_armies;
-  double attack_destroyed = ceil((0.84*a1)+(0.16*a2));
+  // Calculate how much attacking armies are destroyed with 100% luck
+  for(int i = 1; i <= defending_armies; i++) 
+  {
+    double chance = (rand() % 100) / 10.0;  // Between 0 and 1
+    //70% chance to destroy one attacking army
+    if(chance < 0.7) attacking_destroyed++;
+  }
+
+  // Calculate how much defending armies are destroyed with 100% luck
+  for(int i = 1; i <= attacking_armies; i++)
+  {
+    double chance = (rand() % 100) / 10.0;  // Between 0 and 1
+    //60% chance to destroy one defending army
+    if(chance < 0.6) defending_destroyed++;
+  }
+
+  // Apply luck modifier to get actual amount of destroyed armies
+  // Straight round method is used (instead of weighted random round)
+  defending_destroyed = (int) round( ((attacking_armies * 0.6) * (1 - LUCK_MODIFIER))
+				    + (defending_destroyed * LUCK_MODIFIER) );
+  attacking_destroyed = (int) round( ((defending_armies * 0.7) * (1 - LUCK_MODIFIER))
+				    + (attacking_destroyed * LUCK_MODIFIER) );
   
-  survive_attack = attack_armies - attack_destroyed;
-  survive_defend = defend_armies - defend_destroyed;
-  if(survive_defend < 0) survive_defend = 0;
-  
-  std::cout << "attack_armies: " << attack_armies 
-	    << " attack_destroyed: " << attack_destroyed 
-	    << " survive_attack: " << survive_attack << std::endl;
-  std::cout << "defend_armies: " << defend_armies
-	    << " defend_destroyed: " << defend_destroyed
-	    << " survive_defend: " << survive_defend << std::endl;
+  if(attacking_destroyed >= attacking_armies)
+  {
+    if(defending_destroyed >= defending_armies)
+      defending_destroyed = defending_armies - 1;
+    
+    attacking_destroyed = attacking_armies;
+  }
 }
 
 double MCTSManager::calculateWinPercentage(std::vector<Region> regions, State& state)

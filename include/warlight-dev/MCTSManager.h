@@ -12,6 +12,8 @@
 #include "Region.h"
 #include "State.h"
 
+#define LUCK_MODIFIER 0.16
+
 typedef tree<State> Tree;
 typedef tree<State>::iterator TreeIterator;
 typedef tree<State>::sibling_iterator TreeSiblingIterator;
@@ -33,7 +35,7 @@ class MCTSManager
   std::string getRandomMove(State& state);
   void simulateOurTurn(State& state, std::vector<Region> regions, State& result);
   void simulateOpponentsTurn(State& state, std::vector<Region> regions, State& result);
-  void simulateBattle(int attack_armies, int defend_armies, int& survive_attack, int& survive_defend);
+  void simulateBattle(int attacking_armies, int defending_armies, int& attacking_destroyed, int&defending_destroyed);
   double calculateWinPercentage(std::vector<Region> regions, State& state);
   std::string findBestMove(Tree game_tree);
 
