@@ -21,9 +21,11 @@ std::string MCTSManager::execute(std::string name, std::vector<Region> regions, 
   Tree game_tree;
   game_tree.insert(game_tree.begin(), State(name, regions));
   std::cout << "Tree initialization complete\n";
+
+  std::cout << "Printing tree\n";
   //kptree::print_tree_bracketed(test, std::cout);
   printTree(game_tree);
-
+  //printTreeBracketed(game_tree);
 
   /* =============================================================================== */
   // This will be based on time, but for debuggin purposes just an arbitrary number of iterations
@@ -37,9 +39,14 @@ std::string MCTSManager::execute(std::string name, std::vector<Region> regions, 
    *  For now, traverse "random" branch until random location or child node
    *  ------------------------------------------------------------------------------
    */
+  std::cout << "Starting SELECTION process\n";
   TreeSiblingIterator node_itr = game_tree.begin();
-  int rand_depth = rand() % game_tree.max_depth();    // Traverse to random depth 
-  int curr_depth = 0;                                 // Effectively creates new random branches
+  //int num_nodes = game_tree.size();
+  int max_depth = game_tree.max_depth();              // Opportunity for optimization!
+  if(max_depth == 0) max_depth = 1;                   // Avoid floating point exception!
+  int rand_depth = rand() % max_depth;
+  int curr_depth = 0;                                 // Effectively creates new random branches  
+  std::cout << "Random depth of search is " << rand_depth << " \n";
   // If we have reached random depth OR a child node, stop and simulate from this location
   while((curr_depth < rand_depth) && (node_itr.number_of_children() > 0))
   {
@@ -66,6 +73,7 @@ std::string MCTSManager::execute(std::string name, std::vector<Region> regions, 
    *  Expand current path by one node representing a random move
    *  ------------------------------------------------------------------------------
    */
+  std::cout << "Starting EXPANSION process\n";
   State result(name, regions, 0.5);
   simulateOurTurn((*node_itr), regions, result);
 
@@ -79,6 +87,7 @@ std::string MCTSManager::execute(std::string name, std::vector<Region> regions, 
    *  Simulate the rest of the game to determine the win_percentage of added node
    *  ------------------------------------------------------------------------------
    */
+  std::cout << "Starting SIMULATION process\n";
   State curr = result;
   State next;
   int steps = 0;
@@ -100,6 +109,7 @@ std::string MCTSManager::execute(std::string name, std::vector<Region> regions, 
    *  Update all parent nodes using win_percentage information we gained
    *  ------------------------------------------------------------------------------
    */
+  std::cout << "Starting BACK PROPAGATION process\n";
   double updated_win_percentage = next.getWinPercentage();
   while(node_itr != game_tree.begin())
   {
@@ -157,6 +167,7 @@ std::string MCTSManager::getRandomMove(State& state)
 
 void MCTSManager::simulateOurTurn(State& state, std::vector<Region> regions, State& result)
 {
+  std::cout << "-- Simulating our turn --" << std::endl;;
   // Get random, valid move
   std::string move = getRandomMove(state);
   
@@ -219,6 +230,7 @@ void MCTSManager::simulateOurTurn(State& state, std::vector<Region> regions, Sta
 
 void MCTSManager::simulateOpponentsTurn(State& state, std::vector<Region> regions, State& result)
 {
+  std::cout << "-- Simulating their turn --" << std::endl;;
   // @TODO: Implement
   result = state;
 }
@@ -286,9 +298,57 @@ void MCTSManager::printTree(Tree game_tree)
   {
     std::cout << "Owner: "    << (*node).getName() 
 	      << "   Win %: " << (*node).getWinPercentage() << std::endl;
-    ++node;
+    node++;
   }  
 }
+
+void MCTSManager::printTreeBracketed(const Tree& t)
+{
+  int headCount = t.number_of_siblings(t.begin());
+  int headNum = 0;
+  std::cout << "headCount: " << headCount << " headNum: " << headNum << std::endl;
+  for(Tree::sibling_iterator iRoots = t.begin(); iRoots != t.end(); ++iRoots, ++headNum) {
+    printSubtreeBracketed(t, iRoots);
+    if (headNum != headCount) {
+      std::cout << "Printing newline\n";
+      std::cout << std::endl;
+    }
+    std::cout << "Next iteration\n";
+  }
+  std::cout << "Done printTreeBracketed\n";
+}
+
+void MCTSManager::printSubtreeBracketed(const Tree& t, Tree::iterator iRoot)
+{
+  std::cout << "Printing subtree" << std::endl;
+  if(t.empty()) return;
+  std::cout << "Tree not empty\n";
+  if (t.number_of_children(iRoot) == 0) {
+    std::cout << "Subtree has no children\n";
+    std::cout << (*iRoot).getName();
+  }
+  else {
+    std::cout << "Iterating, printing subtree\n";
+    // parent
+    std::cout << (*iRoot).getName();
+    std::cout << "(";
+    // child1, ..., childn
+    int siblingCount = t.number_of_siblings(t.begin(iRoot));
+    int siblingNum;
+    Tree::sibling_iterator iChildren;
+    for (iChildren = t.begin(iRoot), siblingNum = 0; iChildren != t.end(iRoot); ++iChildren, ++siblingNum) {
+      // recursively print child 
+      printSubtreeBracketed(t, iChildren);
+      // comma after every child except the last one
+      if (siblingNum != siblingCount ) {
+	std::cout << ", ";
+      }
+    }
+    std::cout << ")";
+  }
+}
+
+
 
 
 

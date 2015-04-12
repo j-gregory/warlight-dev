@@ -3,7 +3,7 @@ project(warlight-dev)
 set(CMAKE_BUILD_TYPE Release)
 
 # Set this project to use C++11
-set (CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
+set (CMAKE_CXX_FLAGS "-std=c++11 -g ${CMAKE_CXX_FLAGS}")
 
 include_directories("./include/warlight-dev")
 

@@ -26,6 +26,9 @@ class MCTSManager
   std::string execute(std::string name, std::vector<Region> regions, double timelimit);
   void printTree(Tree game_tree);
 
+  void printTreeBracketed(const Tree& t);
+  void printSubtreeBracketed(const Tree& t, Tree::iterator iRoot);
+
  protected:
   std::string getRandomMove(State& state);
   void simulateOurTurn(State& state, std::vector<Region> regions, State& result);
