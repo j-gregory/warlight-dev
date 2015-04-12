@@ -25,7 +25,7 @@ class MCTSManager
   MCTSManager();
   ~MCTSManager();
 
-  std::string execute(std::string name, std::vector<Region> regions, double timelimit);
+  std::string execute(std::string name, std::vector<Region> all_regions, std::vector<int> owned_regions, double timelimit);
   void printTree(Tree game_tree);
 
   void printTreeBracketed(const Tree& t);
@@ -33,8 +33,8 @@ class MCTSManager
 
  protected:
   std::string getRandomMove(State& state);
-  void simulateOurTurn(State& state, std::vector<Region> regions, State& result);
-  void simulateOpponentsTurn(State& state, std::vector<Region> regions, State& result);
+  void simulateOurTurn(State& state, State& result);
+  void simulateOpponentsTurn(State& state, State& result);
   void simulateBattle(int attacking_armies, int defending_armies, int& attacking_destroyed, int&defending_destroyed);
   double calculateWinPercentage(std::vector<Region> regions, State& state);
   std::string findBestMove(Tree game_tree);

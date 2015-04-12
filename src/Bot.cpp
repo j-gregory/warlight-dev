@@ -310,7 +310,7 @@ void Bot::executeAction()
 
 
     // Use MCTS to determine moves
-    std::string result  = mcts->execute(bot_name, regions, 1000);
+    std::string result  = mcts->execute(bot_name, regions, owned_regions, (double)1000);
     std::cout << result << "\n";
     std::cout.flush();
   }
