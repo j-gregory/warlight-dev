@@ -1,0 +1,38 @@
+--------------------
+questions to ask Jason:
+----------------------
+The tracing message in Bot::analyzeAvailableRegions() isn't working
+maeks me wonder that opponent_reginos.push_back() isn't working there.
+
+--------------------
+log for code change
+----------------------
+@ SuperRegion.h
+  int costForYouToOwn;      //kq: Tells the # of regions left if you were to own it.
+  int costForOppToOwn;      //kq: Tells the # of regions left for opponent to own it.
+  
+@ State.cpp
+2 new constructor:
+State::State(std::string n, std::vector<Region> all, std::vector<int> owned, double p, OpponentBot *opponentBot)
+State::State(std::string n, std::vector<Region> all, std::vector<int> owned, double p, int enemyReinforcement, int enemyRegionConcentrated)
+3 new members:
+OpponentBot *opponent_bot;
+int opponent_reinforcement;
+int opponent_momentumRegion;
+
+@Bot.h
+OpponentBot opponent_bot;	//private member;
+
+debug
+'debug'is now extended to
+debug normal
+debug oppoent
+
+In some files: Bot.cpp, I started the tracing message underutilized
+#ifndef DEBUG_CANCEL_PRINT
+  std::cout << "trace message" << "\n";   
+#endif // DEBUG_PRINT
+The actual '#define DEBUG_CANCEL_PRINT' is commented and should be uncommented in deployment
+
+super_regions was taken from private scope to public scope @ Bot.h
+

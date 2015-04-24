@@ -1,5 +1,5 @@
 #ifndef __MCTSMANAGER_H_INCLUDED__
-#define __MCTSMANAGER_H_INCLUDED__ 
+#define __MCTSMANAGER_H_INCLUDED__
 
 #include <iostream>
 #include <stdio.h>
@@ -13,6 +13,8 @@
 #include "State.h"
 
 #define LUCK_MODIFIER 0.16
+
+class State;
 
 typedef tree<State> Tree;
 typedef tree<State>::iterator TreeIterator;

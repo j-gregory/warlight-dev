@@ -12,7 +12,7 @@ MCTSManager::~MCTSManager()
 
 }
 
-std::string MCTSManager::execute(std::string name, std::vector<Region> all_regions, std::vector<int> owned_regions, double timelimit)
+std::string MCTSManager::execute(std::string name, std::vector<Region> all_regions, std::vector<int> owned_regions, double timelimit) //kq: This could be expanded with opponent_bot
 {
   std::cout << "Executing MCTS\n";
   std::cout << "Initializing tree\n";
@@ -45,7 +45,7 @@ std::string MCTSManager::execute(std::string name, std::vector<Region> all_regio
   int max_depth = game_tree.max_depth();              // Opportunity for optimization!
   if(max_depth == 0) max_depth = 1;                   // Avoid floating point exception!
   int rand_depth = rand() % max_depth;
-  int curr_depth = 0;                                 // Effectively creates new random branches  
+  int curr_depth = 0;                                 // Effectively creates new random branches
   std::cout << "Random depth of search is " << rand_depth << " \n";
   // If we have reached random depth OR a child node, stop and simulate from this location
   while((curr_depth < rand_depth) && (node_itr.number_of_children() > 0))
@@ -73,8 +73,8 @@ std::string MCTSManager::execute(std::string name, std::vector<Region> all_regio
    *  Expand current path by one node representing a random move
    *  ------------------------------------------------------------------------------
    */
-  std::cout << "Starting EXPANSION process\n";
   State result(name, all_regions, owned_regions, 0.5);
+  std::cout << "Starting EXPANSION process\n";
   simulateOurTurn((*node_itr), result);
 
   // Add new node to tree, iterate there
@@ -95,9 +95,9 @@ std::string MCTSManager::execute(std::string name, std::vector<Region> all_regio
   while(steps < 5)
   {
     // Their turn? Guess one of their moves
-    if(steps%2 == 0) simulateOpponentsTurn(curr, next);
+    if(steps%2 == 0) simulateOpponentsTurn(curr, next); //kq: This could be expanded with opponent_bot
     // Our turn? Simulate a random move
-    else simulateOurTurn(curr, next);
+    else simulateOurTurn(curr, next);                   //kq: This could be expanded with opponent_bot
 
     curr = next;
     steps++;
@@ -126,10 +126,10 @@ std::string MCTSManager::execute(std::string name, std::vector<Region> all_regio
   return (name + findBestMove(game_tree));
 }
 
-std::string MCTSManager::getRandomMove(State& state)
+std::string MCTSManager::getRandomMove(State& state)    //kq: who is calling it ?
 {
   std::string rand_move = "No moves\n";
-  
+
   // Look at state.owned_regions, pick a random valid move
 
   /*  ------------------------------------------------ */
@@ -153,18 +153,18 @@ std::string MCTSManager::getRandomMove(State& state)
     }
   }
   /*  ------------------------------------------------ */
-  
+
   // Find (random) adjacent region
   //int owned_region = all_regions[owned_regions[from_index]].getID();
   //int rand_index = rand() % all_regions[owned_region].getNumNeighbors();
-  //int to = all_regions[owned_region].getNeighbors()[rand_index];  
+  //int to = all_regions[owned_region].getNeighbors()[rand_index];
   int rand_index = rand() % all_regions[from_id].getNumNeighbors();
   int to = all_regions[from_id].getNeighbors()[rand_index];
 
-  return (all_regions[from_id].getOwner() + 
-	  " attack/transfer " + 
-	  std::to_string(from_id) + " " + 
-	  std::to_string(to) + " " + 
+  return (all_regions[from_id].getOwner() +
+	  " attack/transfer " +
+	  std::to_string(from_id) + " " +
+	  std::to_string(to) + " " +
 	  std::to_string(max_armies-1) + "\n");
 }
 
@@ -173,7 +173,7 @@ void MCTSManager::simulateOurTurn(State& state, State& result)
   std::cout << "-- Simulating our turn --" << std::endl;;
   // Get random, valid move
   std::string move = getRandomMove(state);
-  
+
   // Produce resulting state for random valid move by simulating turn
   std::cout << "Executing random move: " << move;
 
@@ -184,24 +184,24 @@ void MCTSManager::simulateOurTurn(State& state, State& result)
     int to = std::stoi(tokens[3]);
     int attacking_armies = std::stoi(tokens[4]);
     int defending_armies = state.getAllRegions()[to].getNumArmies();
-    
-    std::cout << "Simulating attack from region " << from 
-	      << " with " << attacking_armies << " armies" 
-	      << " to region " << to 
+
+    std::cout << "Simulating attack from region " << from
+	      << " with " << attacking_armies << " armies"
+	      << " to region " << to
 	      << " that has " << defending_armies << " armies " << std::endl;
-    
+
     int attacking_destroyed = 0;
     int defending_destroyed = 0;
     simulateBattle(attacking_armies, defending_armies, attacking_destroyed, defending_destroyed);
-    
+
     int survive_attack = attacking_armies - attacking_destroyed;
     //if(survive_attack < 0) survive_attack = 0;
     int survive_defend = defending_armies - defending_destroyed;
     //if(survive_defend < 0) survive_defend = 0;
 
     std::cout << "Battle Simulation Results: " << std::endl;
-    std::cout << "attacking_armies: "     << attacking_armies 
-	      << " attacking_destroyed: " << attacking_destroyed 
+    std::cout << "attacking_armies: "     << attacking_armies
+	      << " attacking_destroyed: " << attacking_destroyed
 	      << " survive_attack: "      << survive_attack << std::endl;
     std::cout << "defending_armies: "     << defending_armies
 	      << " defending_destroyed: " << defending_destroyed
@@ -234,19 +234,19 @@ void MCTSManager::simulateOurTurn(State& state, State& result)
     }
 
     // If we lost the battle, we may update the other region's number of surviving armies (defense)
-    else 
+    else
     {
       std::cout << "Attack: FAILED\n";
       // Update number of armies in current state
-      int remaining_attacking_armies = 
+      int remaining_attacking_armies =
 	state.getAllRegions()[from].getNumArmies() - attacking_destroyed;  // attacking_armies?
       state.setArmies(from, remaining_attacking_armies);
 
       // Update number of armies in defending region
-      int remaining_defending_armies = 
+      int remaining_defending_armies =
 	state.getAllRegions()[to].getNumArmies() - defending_destroyed;
       // Current implementation doesn't support this because Region 'to' won't be in 'owned'
-      //state.setArmies(to, remaining_defending_armies);   
+      //state.setArmies(to, remaining_defending_armies);
     }
   }
 
@@ -267,7 +267,7 @@ void MCTSManager::simulateBattle(int attacking_armies, int defending_armies, int
   // According to wiki.warlight.net/index.php/Combat_Basics
   // Taken directly from doAttack(AttackTransferMove move) method in Warlight2 game engine
   // Then translated to fit our architecture
-  
+
   // If attempting to attack with illegal number of armies (1), do nothing
   if (attacking_armies <= 1)
   {
@@ -277,7 +277,7 @@ void MCTSManager::simulateBattle(int attacking_armies, int defending_armies, int
   }
 
   // Calculate how much attacking armies are destroyed with 100% luck
-  for(int i = 1; i <= defending_armies; i++) 
+  for(int i = 1; i <= defending_armies; i++)
   {
     double chance = (rand() % 100) / 10.0;  // Between 0 and 1
     //70% chance to destroy one attacking army
@@ -298,12 +298,12 @@ void MCTSManager::simulateBattle(int attacking_armies, int defending_armies, int
 				    + (defending_destroyed * LUCK_MODIFIER) );
   attacking_destroyed = (int) round( ((defending_armies * 0.7) * (1 - LUCK_MODIFIER))
 				    + (attacking_destroyed * LUCK_MODIFIER) );
-  
+
   if(attacking_destroyed >= attacking_armies)
   {
     if(defending_destroyed >= defending_armies)
       defending_destroyed = defending_armies - 1;
-    
+
     attacking_destroyed = attacking_armies;
   }
 }
@@ -344,10 +344,10 @@ void MCTSManager::printTree(Tree game_tree)
   TreeIterator node = game_tree.begin();
   while(node != game_tree.end())
   {
-    std::cout << "Owner: "    << (*node).getName() 
+    std::cout << "Owner: "    << (*node).getName()
 	      << "   Win %: " << (*node).getWinPercentage() << std::endl;
     node++;
-  }  
+  }
 }
 
 void MCTSManager::printTreeBracketed(const Tree& t)
@@ -378,7 +378,7 @@ void MCTSManager::printSubtreeBracketed(const Tree& t, Tree::iterator iRoot)
     int siblingNum;
     Tree::sibling_iterator iChildren;
     for (iChildren = t.begin(iRoot), siblingNum = 0; iChildren != t.end(iRoot); ++iChildren, ++siblingNum) {
-      // recursively print child 
+      // recursively print child
       printSubtreeBracketed(t, iChildren);
       // comma after every child except the last one
       if (siblingNum != siblingCount ) {
@@ -397,7 +397,7 @@ void MCTSManager::printSubtreeBracketed(const Tree& t, Tree::iterator iRoot)
   // /////////////////////
   // Second implementation of Selection process
   // Probably less efficient in the long term
-  
+
   /*
   // Iterate all leafs and count total
   int number_of_leafs = 0;
@@ -419,5 +419,5 @@ void MCTSManager::printSubtreeBracketed(const Tree& t, Tree::iterator iRoot)
     index++;
   }
   std::cout << "There are " << number_of_leafs << " leafs\n";
-  std::cout << "Got to leaf node: " << (*leaf_itr).getName() << std::endl; 
+  std::cout << "Got to leaf node: " << (*leaf_itr).getName() << std::endl;
   */

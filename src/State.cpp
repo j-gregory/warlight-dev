@@ -29,6 +29,25 @@ State::State(std::string n, std::vector<Region> all, std::vector<int> owned, dou
   move = "No moves\n";
 }
 
+State::State(std::string n, std::vector<Region> all, std::vector<int> owned, double p, OpponentBot *opponentBot)
+{
+  name = n;
+  all_regions = all;
+  owned_regions = owned;
+  win_percentage = p;
+  move = "No moves\n";
+  opponent_bot = opponentBot;
+}
+
+State::State(std::string n, std::vector<Region> all, std::vector<int> owned, double p, int enemyReinforcement, int enemyRegionConcentrated) : opponent_reinforcement(enemyReinforcement), opponent_momentumRegion(enemyRegionConcentrated)
+{
+  name = n;
+  all_regions = all;
+  owned_regions = owned;
+  win_percentage = p;
+  move = "No moves\n";
+}
+
 State::~State()
 {
 
@@ -36,7 +55,7 @@ State::~State()
 
 bool operator==(const State& s1, const State& s2)
 {
-  return ( (s1.name == s2.name) && 
+  return ( (s1.name == s2.name) &&
 	   (s1.owned_regions == s2.owned_regions) &&
 	   //std::equal(s1.owned_regions.begin(), s1.owned_regions.end(), s2.owned_regions) &&
 	   (s1.move == s2.move) &&

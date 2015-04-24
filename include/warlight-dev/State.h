@@ -8,14 +8,34 @@
 //#include <vector>
 
 #include "Region.h"
+#include "OpponentBot.h"
 
+class OpponentBot;
 class State
 {
+
+ protected:
+  std::string name;
+  std::vector<Region> all_regions;
+  std::vector<int> owned_regions;	//kq: legacy list is vector<Region>
+  std::string move;
+  double win_percentage;
+
+  //Use either this
+   OpponentBot *opponent_bot;          //kq: introduced so that in mcts->execute() can take advantage of :
+                                        //GetMaxMomentRegion()   - to bias the UCT simulation with a node where opponent carries most momentum
+                                        //GetReinforcement() - to take account of maximum # of oppoent reinforcement that can take place on a region to be attacked
+                                        //GetTroopsLeftTurn() - can be used only if opponent_bot is passed by val instead of passed by ref
+  //Or use this
+  int opponent_reinforcement;
+  int opponent_momentumRegion;
  public:
   State();
   State(std::string n);
   State(std::string n, std::vector<Region> all, std::vector<int> owned);
   State(std::string n, std::vector<Region> all, std::vector<int> owned, double p);
+  State(std::string n, std::vector<Region> all, std::vector<int> owned, double p, OpponentBot *opponentBot);
+  State(std::string n, std::vector<Region> all, std::vector<int> owned, double p, int enemyReinforcement, int enemyRegionConcentrated);
   ~State();
 
   /* Getters */
@@ -27,21 +47,16 @@ class State
 
   /* Setters */
   void setName(std::string n);
-  void setOwnedRegions(std::vector<int> r);
+  void setOwnedRegions(std::vector<int> r); //kq: umm w/o using vector<Region> we loose the neighbored regions. good idea ?
   void setArmies(int region_id, int armies);
   void setMove(std::string m);
   void setWinPercentage(double p);
 
-  void addNewOwnedRegion(int region_id);
+  void addNewOwnedRegion(int region_id);  //kq: originally input param was type Region
 
   friend bool operator== (const State& s1, const State& s2);
 
- protected:
-  std::string name;
-  std::vector<Region> all_regions;
-  std::vector<int> owned_regions;
-  std::string move;
-  double win_percentage;
+
 };
 
 #endif  // __STATE_H_INCLUDED__

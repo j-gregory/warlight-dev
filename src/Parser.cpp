@@ -37,11 +37,11 @@ void Parser::parseInput()
       parsePickStartingRegions();
     else if (input_type == "update_map")
       parseUpdateMap();
-    else if (input_type == "opponent_moves")
+    else if (input_type == "opponent_moves")    //kq: parseOpponentMoves() is called for the actual
       parseOpponentMoves();
     else if (input_type == "go")
       parseGo();
-    else if (input_type == "debug")
+    else if (input_type == "debug")             //kq; flesh this out for bot opponent()
       bot->printStatus();
     bot->executeAction();
   }
@@ -150,8 +150,8 @@ void Parser::parseSetupMap()
     parseRegions();
   else if (setup_type == "neighbors")
     parseNeighbors();
-  else if (setup_type == "wastelands")
-    parseWastelands();
+  else if (setup_type == "wastelands")                  //kq: The Neutral lands that are started off at the beginning
+    parseWastelands();                                  //kq: parseWasteLands() isn't implemented, you should use it for bot neutral zone.
   else if (setup_type == "opponent_starting_regions")
     parseOpponentStartingRegions();
 }
@@ -169,16 +169,17 @@ void Parser::parsePickStartingRegions()
   bot->resetAvailableRegions();
   while(std::cin  >> region)
   {
-    bot->addAvailableRegion(region);
+    bot->addAvailableRegion(region);    //kq: adding to avail region
+
     if (std::cin.peek() == '\n')
       break;
   }
-  bot->analyzeAvailableRegions();
-  bot->setPhase("pickPreferredRegion");
+  bot->analyzeAvailableRegions();       //kq: bookeeping of regions to either your bot or opponent's
+  bot->setPhase("pickPreferredRegion"); //kq: This phase is implemented in Bot.cpp
 }
 
 /* "update_map" Parser */
-void Parser::parseUpdateMap()
+void Parser::parseUpdateMap()       //kq: This needs to be fleshed out for opponent Bot
 {
 #ifdef DEBUG_PRINT
   std::cout <<"parseUpdate_Map\n";
@@ -195,8 +196,9 @@ void Parser::parseUpdateMap()
   }
 }
 
-/* "opponent_moves" Parser */
-void Parser::parseOpponentMoves()
+/* "opponent_moves" Parser */// TODO (pavel#1#):
+
+void Parser::parseOpponentMoves()   //kq: who is calling this? Is this good place for Opponent.GuesstimateStrength() ?
 {
 #ifdef DEBUG_PRINT
   std::cout << "parseOpponent_Moves\n";
@@ -204,14 +206,14 @@ void Parser::parseOpponentMoves()
   std::string player_name;
   std::string action;
   int region_id;
-  int num_armies; 
+  int num_armies;
   int to_region;
   while (std::cin.peek()!= '\n' && std::cin >> player_name >> action)
   {
     if (action == "place_armies")
     {
       std::cin >> region_id >> num_armies;
-      bot->addArmies(region_id, num_armies);
+      bot->addArmies(region_id, num_armies);    //kq: regions[region_id].setArmies(regions[region_id].getNumArmies() + num_armies);
     }
     if (action == "attack/transfer")
     {
@@ -231,6 +233,9 @@ void Parser::parseGo()
   std::cin >> phase >> time_limit;
   bot->startClock(time_limit);
   bot->setPhase(phase);
+
+  //kq: debug trace, take out later
+  std::cout << "TRACE: Parser::parseGo() \n";
 }
 
 /* ************************************ */
@@ -244,7 +249,7 @@ void Parser::parseSuperRegions()
 #ifdef DEBUG_PRINT
   std::cout << "parseSuperRegions\n";
 #endif // DEBUG_PRINT
-  
+
   while(std::cin >> super >> reward)
   {
     bot->addSuperRegion(super, reward);
@@ -264,7 +269,7 @@ void Parser::parseRegions()
 #ifdef DEBUG_PRINT
   std::cout << "parseRegions\n";
 #endif // DEBUG_PRINT
-  
+
   while(std::cin  >> region >> super)
   {
     bot->addRegion(region, super);
@@ -294,11 +299,12 @@ void Parser::parseNeighbors()
       break;
   }
   neighbors_flds.clear();
-  bot->setPhase("findBorders");
+  bot->setPhase("findBorders"); //kq: Not implemented.
 }
 
 /* "setup_map wastelands" Parser */
 /* Region IDs of neutral regions (>2 armies) */
+//kq: Implement this
 void Parser::parseWastelands()
 {
 
@@ -308,7 +314,14 @@ void Parser::parseWastelands()
 /* Region IDs opponent has chosen */
 void Parser::parseOpponentStartingRegions()
 {
+    int region;
 
+    while(std::cin >> region)
+    {
+        bot->opponent_bot->AddRegion(region);
+        if(std::cin.peek() == '\n')
+            break;
+    }
 }
 
 /* ************************************ */

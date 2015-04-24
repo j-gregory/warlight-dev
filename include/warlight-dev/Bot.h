@@ -13,6 +13,11 @@
 #include "Region.h"
 #include "SuperRegion.h"
 #include "MCTSManager.h"
+#include "OpponentBot.h"
+
+class MCTSManager;
+class OpponentBot;
+class SuperRegion;
 
 class Bot
 {
@@ -24,26 +29,29 @@ class Bot
   int max_rounds;
   std::string bot_name;
   std::string opponent_bot_name;
-  std::vector<SuperRegion> super_regions;
-  std::vector<SuperRegion> p_super_regions;
+  //std::vector<SuperRegion> super_regions;
+  std::vector<SuperRegion> p_super_regions;     //kq: p_super_regions are sorted & used to determine which region to choose first @ bot.execute() and phase of "pickPreferredRegion"
   std::vector<Region> regions;
   std::vector<int> prev_avail_regions;
   std::vector<int> curr_avail_regions;
-  std::map<int, std::string> belief_regions;
+  std::map<int, std::string> belief_regions;    //kq: This is only used during inital setup and not updated since, This is used to choose regions @ startup..
   std::vector<int> owned_regions;
-  std::vector<int> opponent_regions;
+  std::vector<int> opponent_regions;            //kq: This is only used during inital setup and not updated since, This is used to choose regions @ startup
   int armies_left;
   int pick_amount;
 
   Parser parser;
   std::string phase;
 
+
   MCTSManager* mcts;
 
  public:
   Bot();
   virtual ~Bot();
-  
+
+  OpponentBot *opponent_bot;
+
   void playGame();    // Plays a single game of Warlight
   void makeMoves();   // Makes moves for a single turn
   void endTurn();     // Indicates to the engine that it has made its moves
@@ -78,6 +86,8 @@ class Bot
   void resetRegionsOwned();
 
   void printStatus();
+
+  std::vector<SuperRegion> super_regions;
 
  private:
 
