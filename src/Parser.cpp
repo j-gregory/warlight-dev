@@ -256,6 +256,8 @@ void Parser::parseSuperRegions()
     if (std::cin.peek()== '\n')
       break;
   }
+  bot->SendStatus(Bot::BotSetupStages::SetSuperRegions);
+
   //Shouldn't analyze here
   //bot->analyzeSuperRegions();
 }
@@ -277,6 +279,8 @@ void Parser::parseRegions()
       break;
   }
   bot->analyzeSuperRegions();
+//  Bot::BotSetupStages
+  bot->SendStatus(Bot::BotSetupStages::SetRegions);
   //bot->analyzeRegions();
 }
 
