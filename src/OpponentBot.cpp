@@ -37,8 +37,9 @@ void OpponentBot::SetName(string input)
 }
 
 //Adds a region to the list OpponentBot owns
- //2nd param is 0, if this is the starting region for the opponent.
-void OpponentBot::AddRegion(int regionid)
+//1st param: Region id
+//2nd param is 0, if this is the starting region for the opponent.
+void OpponentBot::AddRegion(int regionid, int troops)
 {
     //add all regions to a list
     //from the list, decide how many super_regions are there, which one is easier to achieve ? use SuperRegion.getNumRegions()
@@ -46,12 +47,14 @@ void OpponentBot::AddRegion(int regionid)
     //if the region already belongs to the list, subtract 1 from the cost of owning the super_region.
     //If all super_regions in the list is achieved, do the calculation again with all neighboring area and which super_region is
     //easier to achieve.
-    OpponentTotalRegion.push_back(regionid);
+
+    //OpponentTotalRegion.push_back(regionid, troops);
+    OpponentQueueRegions.push_back(tuple<int, int>(regionid, troops));
 
 }
 
 //Subtracts a region to the list OpponentBot owns
-void OpponentBot::SubRegion(int regionid)
+void OpponentBot::SubRegion(int regionid, int troops)
 {
     //if a region is subtracted, is it subtracted from a super_region in list ? Add cost to the super_region list.
     //Is it the first region lost in Super_region, push it up in the ordered list.
@@ -93,43 +96,47 @@ void OpponentBot::regionToSuperRegionMapping()  //This should be called only onc
     int tmpSuperRegion;
     int troopInThisRegion = 0;
     bool ownStatus = false;
-    int bogusCost = (reinforcementThisTurn / OpponentTotalRegion.size());
+    int bogusCost = (reinforcementThisTurn / OpponentQueueRegions.size());
 
 
     for(unsigned int i=1; i < (bot->super_regions.size()); i++)
     {
         tmpSuperRegion = bot->super_regions[i].getID();
-        //std::cout << "SuperRegion # " << std::to_string(tmpSuperRegion);
-        tempRegions = bot->super_regions[i].getRegions();       //get list of regions for each super_reigon
+        //get list of regions for each super_reigon
+        tempRegions = bot->super_regions[i].getRegions();
 
         //check if any of those region already belong to opponent_bot
         for(unsigned int j=0; j < tempRegions.size(); j++)
         {
-            if(OpponentTotalRegion.size() > 0)
+            //if there are regions in the queue....
+            if(OpponentQueueRegions.size() > 0)
             {
-                for(unsigned int p = 0; p < OpponentTotalRegion.size();  p++)
+                for(unsigned int p = 0; p < OpponentQueueRegions.size();  p++)
                 {
-                    if(OpponentTotalRegion.at(p) == tempRegions[j])
+                    if( std::get<0>(OpponentQueueRegions.at(p)) == tempRegions[j])
                     {
                         //std::cout << " Reigons : " << tempRegions[j];
                         ownStatus = true;
-                        //std::cout << " OwnStatus : " << (ownStatus ? "Y" : "N");
-                        //troopInThisRegion = bot->regions[tempRegions[j]].getNumArmies();
-                        //std::cout << " Value of i " << std::to_string(i) << " j " << std::to_string(j) << " p " << std::to_string(p);
+                        troopInThisRegion = std::get<1>(OpponentQueueRegions.at(p));
 
-                        //OpponentTotalRegion.erase(OpponentQueueRegions.begin()+p);
-                        //OpponentTotalRegion.pop_back();
+                        if(troopInThisRegion == 0){troopInThisRegion = bogusCost;}
+                        OpponentTotalRegion.push_back(tuple<int, int, int>(tmpSuperRegion, tempRegions[j], troopInThisRegion));
+
+                        OpponentQueueRegions.erase(OpponentQueueRegions.begin()+p);
+                        //OpponentQueueRegions.pop_back();
                         break;
                     }
                 }
             }
 
-            //regions[region_id].setArmies(regions[region_id].getNumArmies() + num_armies);
-            troopInThisRegion = bot->regions[tempRegions[j]].getNumArmies();
-            if((troopInThisRegion == 0) && (ownStatus)){troopInThisRegion = bogusCost;}
-            //std::cout << " troops " << std::to_string(troopInThisRegion) << endl;
-            regionToSuperRegionMap.push_back(tuple<int, int, int, bool>(tmpSuperRegion, tempRegions[j], troopInThisRegion, ownStatus)); //change the 3rd element to troop #
-            //OpponentTotalRegion.push_back(tuple<int, int>(tempRegions[j], troopInThisRegion));
+            if(!ownStatus)
+            {
+                troopInThisRegion = bot->regions[tempRegions[j]].getNumArmies();
+                //Perhaps nobody has visibility to this region, we assign an arbitrary troop number of 3 to help calculate cost of obtaining an object
+                if(troopInThisRegion == 0) {troopInThisRegion = 3;}
+            }
+
+            regionToSuperRegionMap.push_back(tuple<int, int, int, bool>(tmpSuperRegion, tempRegions[j], troopInThisRegion, ownStatus));
 
             troopInThisRegion = 0;
             ownStatus = false;
@@ -137,33 +144,169 @@ void OpponentBot::regionToSuperRegionMapping()  //This should be called only onc
 
         tempRegions.clear();
 
-        //std::cout << endl;
+        //create a list that is sorted according to Super Regions
+        superRegionToRegionMap = regionToSuperRegionMap;
+        //create a list that is sorted according to Region
+        std::sort(begin(regionToSuperRegionMap), end(regionToSuperRegionMap), TupleCompareAscending<1>());
+
     }//addig super_regions
 
+    allMappingSetupDone = true;    //this routine will not be triggered from now on.
+
 #ifndef DEBUG_CANCEL_PRINT
+
+        std::cout << "Printing regionToSuperRegionMap :=" << endl;
         if(regionToSuperRegionMap.size() > 0)
         {
             output_list_contents(regionToSuperRegionMap);
-
-//            std::cout << "Size of SueprRegions array @ bot is " << std::to_string(bot->super_regions.size()) << endl;
-//            std::cout << "First super_Region is :" << std::to_string(bot->super_regions[1].getID()) << endl;
-//            std::cout << "Last super_Region is :" << std::to_string(bot->super_regions[6].getID()) << endl;
-//
-//            std::cout << "Size of Regions array @ bot is " << std::to_string(bot->regions.size()) << endl;
-//            std::cout << "First Region is :" << std::to_string(bot->regions[1].getID()) << endl;
-//            std::cout << "First Region troops are :" << std::to_string(bot->regions[1].getNumArmies()) << endl;
-//
-//            std::cout << "Size of Regions array @ bot is " << std::to_string(bot->regions.size()) << endl;
-//            std::cout << "Last Region is :" << std::to_string(bot->regions[19].getID()) << endl;
-//            std::cout << "Last Region troops are :" << std::to_string(bot->regions[19].getNumArmies()) << endl;
         }
+        std::cout << "Printing superRegionToRegionMap :=" << endl;
+        if(superRegionToRegionMap.size() > 0)
+        {
+            output_list_contents(superRegionToRegionMap);
+        }
+        std::cout << "Printing OpponentQueueRegions :=" << endl;
+        if(OpponentQueueRegions.size() > 0)
+        {
+            output_list_contents(OpponentQueueRegions);
+        }
+        std::cout << "Printing OpponentTotalRegion :=" << endl;
+        if(OpponentTotalRegion.size() > 0)
+        {
+            output_list_contents(OpponentTotalRegion);
+        }
+
 #endif
 }
+
+//Sets up a quick list of achievable Super Regions and their heuristic cost
+void OpponentBot::calculateCost()
+{
+    std::vector<tuple<int>> tempListOfSuperRegionsToConsider;
+    bool alreadyOwn = false;
+    bool foundEntryInSuperRegionPursueList = false;
+    int tempCostofSuperRegion = 0;
+    int tempSuperRegion = 0;
+    int tempSuperRegionToConsider = 0;
+    int tempSuperRegionInPursueList = 0;
+    int tempRegionToIgnore = 0;
+    int tempRegionAudited = 0;
+    SuperRegionPursueList.clear();      //start with cean slate
+    //std::vector<tuple<int, int>>
+
+    //take a list of superRegions
+    for(unsigned int i=0; i< OpponentTotalRegion.size(); i++)    //iterate through regions you already own
+    {
+       tempSuperRegionToConsider = std::get<0>(OpponentTotalRegion.at(i));
+       tempListOfSuperRegionsToConsider.push_back(tuple<int>(tempSuperRegionToConsider));
+    }
+    std::sort(begin(tempListOfSuperRegionsToConsider), end(tempListOfSuperRegionsToConsider), TupleCompareAscending<0>());
+    //prune the vector
+    for(unsigned int x=0; x< tempListOfSuperRegionsToConsider.size()-1; x++)
+    {
+        if(tempListOfSuperRegionsToConsider.at(x) == tempListOfSuperRegionsToConsider.at(x+1))
+        {
+            tempListOfSuperRegionsToConsider.erase(tempListOfSuperRegionsToConsider.begin()+(x+1));
+        }
+    }
+
+    //use the list of SuperRegions & add all costs of those regions, excpept the ones you already own.
+    for(unsigned int j=0; j<superRegionToRegionMap.size(); j++)
+    {
+        for(unsigned int l=0; l<tempListOfSuperRegionsToConsider.size(); l++)
+        {
+
+            tempSuperRegion = std::get<0>(superRegionToRegionMap.at(j));
+            tempSuperRegionToConsider = std::get<0>(tempListOfSuperRegionsToConsider.at(l));
+            //If you are looking at a member with same Super Region id
+            //if(std::get<0>(superRegionToRegionMap.at(j)) == tempListOfSuperRegionsToConsider.at(l))
+            if(tempSuperRegion == tempSuperRegionToConsider)
+            {
+                //check this row against all already owned region, they are not to be counted for cost calculation
+                for(unsigned int k=0; k< OpponentTotalRegion.size(); k++)
+                {
+                    tempRegionToIgnore = std::get<1>(OpponentTotalRegion.at(k));
+                    tempRegionAudited = std::get<1>(superRegionToRegionMap.at(j));
+                    //If the region in this row already belongs to opponent ignore.
+                    //if(std::get<1>(OpponentTotalRegion.at(k)) ==  std::get<1>(superRegionToRegionMap.at(j)))
+                    if(tempRegionToIgnore == tempRegionAudited)
+                    {
+                        alreadyOwn = true;
+                    }
+                }
+
+                //If you don't own it, add the troop in this region to total cost for this Super Region
+                if(!alreadyOwn)
+                {
+                    tempCostofSuperRegion += std::get<2>(superRegionToRegionMap.at(j));
+
+                    if(SuperRegionPursueList.size() == 0)   //we have no entry.
+                    {
+                        foundEntryInSuperRegionPursueList = true;
+                        SuperRegionPursueList.push_back(tuple<int, int>(tempSuperRegionToConsider, tempCostofSuperRegion));
+                    }
+                    else
+                    {
+                        for(unsigned int m=0; m<SuperRegionPursueList.size(); m++)   //may be we have entry
+                        {
+                            tempSuperRegionInPursueList = std::get<0>(SuperRegionPursueList.at(m));
+                            //if(tempListOfSuperRegionsToConsider.at(l) == std::get<0>(SuperRegionPursueList.at(m)))
+                            if(tempSuperRegionToConsider == tempSuperRegionInPursueList)
+                            {
+                                foundEntryInSuperRegionPursueList = true;
+                                std::get<1>(SuperRegionPursueList.at(m)) += tempCostofSuperRegion;
+                            }
+                        }
+                    }
+
+                    if(!foundEntryInSuperRegionPursueList)
+                    {
+                        SuperRegionPursueList.push_back(tuple<int, int>(tempSuperRegionToConsider, tempCostofSuperRegion));
+                    }
+                }
+
+                tempCostofSuperRegion = 0;
+                foundEntryInSuperRegionPursueList = false;
+            }
+
+        }
+
+        alreadyOwn = false;
+    }
+    std::sort(begin(SuperRegionPursueList), end(SuperRegionPursueList), TupleCompareAscending<1>());
+
+#ifndef DEBUG_CANCEL_PRINT
+
+        std::cout << "Printing SuperRegionPursueList :=" << endl;
+        if(SuperRegionPursueList.size() > 0)
+        {
+            for(unsigned y=0; y<SuperRegionPursueList.size(); y++)
+            {
+                std::cout << "SuperRegion # " << std::get<0>(SuperRegionPursueList.at(y)) << " Cost : " << std::get<1>(SuperRegionPursueList.at(y)) << endl;
+            }
+        }
+        else
+        {
+            std::cout << "SuperRegionPursueList isn't populated" << endl;
+        }
+
+#endif
+}//OpponentBot::calculateCost()
 
 //does internal book-keeping on all regions
 void OpponentBot::Refresh()
 {
-    regionToSuperRegionMapping();       //create a quick list of tuples for region to superRegion to mapping
+    //initial setup
+    if(!allMappingSetupDone)
+    {
+        regionToSuperRegionMapping();       //create a quick list of tuples for region to superRegion to mapping
+        calculateCost();
+    }
+    //update statments after update_map
+    else
+    {
+        std::cout << "update of opponent_bot via update_map haven't been implemented yet" << endl;
+    }
 
 //    for(int i=0; i<OpponentTotalRegion.size(); i++)
 //    {
@@ -214,6 +357,22 @@ void OpponentBot::output_list_contents(std::vector<tuple<int, int, int, bool>> &
     }
 }
 
+void OpponentBot::output_list_contents(std::vector<tuple<int, int, int>> &myList)
+{
+    for(const auto& e: myList)
+    {
+        std::cout << "SuperRegion ID# : "  << std::get<0>(e) << "Region ID# : "  << std::get<1>(e) <<  " Troop# : " << std::get<2>(e) << " Troop# " << endl;
+    }
+}
+
+void OpponentBot::output_list_contents(std::vector<tuple<int, int>> &myList)
+{
+    for(const auto& e: myList)
+    {
+        std::cout << "Region ID# : "  << std::get<0>(e) <<  " Troop# : " << std::get<1>(e) << " Troop# " << endl;
+    }
+}
+
 //called by the "debug opponent" argument
 std::string  OpponentBot::printStatus()
 {
@@ -221,9 +380,9 @@ std::string  OpponentBot::printStatus()
 
     result += "opponent's name :  " + name + '\n';
     result += "opponent's regions are : ";
-    for(unsigned int i=0; i < OpponentTotalRegion.size(); i++)
+    for(unsigned int i=0; i < OpponentQueueRegions.size(); i++)
     {
-        result += ", " + std::to_string( OpponentTotalRegion[i] );
+        result += ", " + std::to_string( std::get<0>(OpponentQueueRegions.at(i)) );
     }
 
     //regionToSuperRegionMapping();
@@ -231,8 +390,8 @@ std::string  OpponentBot::printStatus()
     {
         if(setRegionsStatus && setSuperRegionsSatus)
         {
-            regionToSuperRegionMapping();               //This call should be replaced by Refresh()
-            //std::cout << "all is good" << endl;
+            Refresh();
+            //regionToSuperRegionMapping();               //This call should be replaced by Refresh()
         }
         else
         {
