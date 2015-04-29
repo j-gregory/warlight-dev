@@ -1,8 +1,15 @@
 --------------------
+Immediate things to do:
+----------------------
+
+time() routine;
+"Opponent_move" game engine command
+
+--------------------
 questions to ask Jason:
 ----------------------
 The tracing message in Bot::analyzeAvailableRegions() isn't working
-maeks me wonder that opponent_reginos.push_back() isn't working there.
+
 
 --------------------
 log for code change
@@ -23,7 +30,7 @@ int opponent_momentumRegion;
 @Bot.h
 OpponentBot opponent_bot;	//private member;
 
-debug
+debug 
 'debug'is now extended to
 debug normal
 debug oppoent

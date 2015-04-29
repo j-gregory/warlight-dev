@@ -322,7 +322,7 @@ void Parser::parseOpponentStartingRegions()
 
     while(std::cin >> region)
     {
-        bot->opponent_bot->AddRegion(region);
+        bot->opponent_bot->AddRegion(region, 0);    //we are passing 0, b/c we don't really know the # of troops in that area until update_map phase
         if(std::cin.peek() == '\n')
             break;
     }

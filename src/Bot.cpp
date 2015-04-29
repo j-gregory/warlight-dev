@@ -198,7 +198,7 @@ void Bot::analyzeAvailableRegions() //called by Parser::parsePickStartingRegions
       {
 	opponent_regions.push_back(region);         //kq: only place where opponent_regions is updated.
 	belief_regions[region] = opponent_bot_name;
-	opponent_bot->AddRegion(region);             //kq: giving region to opponent_bot
+	opponent_bot->AddRegion(region, 0);             //kq: giving region to opponent_bot
 
 	#ifndef DEBUG_CANCEL_PRINT
         std::cout << "Opponent Bot added region: " << std::to_string(region) << "\n";   //kq: This never got pritned, I wonder if this orutine is working.

@@ -3,6 +3,9 @@
 
 #include <vector>
 #include "Region.h"
+#include "Bot.h"
+
+class Bot;
 
 class SuperRegion
 {
@@ -10,6 +13,8 @@ class SuperRegion
   std::vector<int> regions;
   int num_regions;
   int reward;
+  int costForYouToOwn;      //kq: Tells the # of regions left if you were to own it.
+  int costForOppToOwn;      //kq: Tells the # of regions left for opponent to own it.
 
  public:
   SuperRegion();
@@ -22,15 +27,21 @@ class SuperRegion
   std::vector<int> getRegions() const { return regions; };
   int getNumRegions()           const { return num_regions; };
   int getReward()               const { return reward; };
+  int GetCostForYouToOwn()      const { return costForYouToOwn; };
+  int GetCostForOppToOwn()      const { return costForOppToOwn; };
 
-  void addRegion(int region_id);  
+  /* Setters */
+  void SetCostForYouToOwn(int cost) { costForYouToOwn = cost; };    //the cost of you and opponent does not add up to total cost, there could be neutral zones
+  void SetCostForOppToOwn(int cost) { costForOppToOwn = cost; };
+
+  void addRegion(int region_id);
   void print();
 
   bool operator< (const SuperRegion& other) const;
 
  protected:
 
- private:
+ //private:             //kq: I commented this, after all private scope is implied by lack of mention for some members already
 
 };
 

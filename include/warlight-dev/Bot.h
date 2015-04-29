@@ -19,6 +19,8 @@ class MCTSManager;
 class OpponentBot;
 class SuperRegion;
 
+
+
 class Bot
 {
   std::ifstream in;
@@ -31,7 +33,7 @@ class Bot
   std::string opponent_bot_name;
   //std::vector<SuperRegion> super_regions;
   std::vector<SuperRegion> p_super_regions;     //kq: p_super_regions are sorted & used to determine which region to choose first @ bot.execute() and phase of "pickPreferredRegion"
-  std::vector<Region> regions;
+  //std::vector<Region> regions;
   std::vector<int> prev_avail_regions;
   std::vector<int> curr_avail_regions;
   std::map<int, std::string> belief_regions;    //kq: This is only used during inital setup and not updated since, This is used to choose regions @ startup..
@@ -51,6 +53,10 @@ class Bot
   virtual ~Bot();
 
   OpponentBot *opponent_bot;
+
+  typedef enum BotSetupStages{
+        SetName=1, SetRegions = 2, SetSuperRegions = 3, SetNeighbors = 4
+    }BotSetupStages;
 
   void playGame();    // Plays a single game of Warlight
   void makeMoves();   // Makes moves for a single turn
@@ -85,9 +91,11 @@ class Bot
   void resetAvailableRegions();
   void resetRegionsOwned();
 
+  void SendStatus(BotSetupStages msg);
   void printStatus();
 
-  std::vector<SuperRegion> super_regions;
+  std::vector<SuperRegion> super_regions;   //kq: temporarily made public
+  std::vector<Region> regions;              //kq: temporarily made public
 
  private:
 

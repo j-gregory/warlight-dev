@@ -5,7 +5,7 @@
 #include <string>
 
 class Region
-{  
+{
   std::vector<int> neighbors;
   int id;
   int num_neighbors;
@@ -24,7 +24,7 @@ class Region
   int getNumNeighbors()            const { return num_neighbors; };
   int getSuperRegionID()           const { return super_region; };
   std::string getOwner()           const { return owner; };
-  int getNumArmies()               const { return armies; };
+  int getNumArmies()               { return armies; }; //legacy:  int getNumArmies()               const { return armies; };
 
   /* Setters */
   void setNumNeighbors(int n);

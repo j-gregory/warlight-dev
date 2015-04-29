@@ -40,8 +40,6 @@ private:
     bool setSuperRegionsSatus = false;
     bool setNeighborsStatus = false;
 
-    bool allMappingSetupDone = false;
-
     string name;
     int reinforcementThisTurn;	                        //Reinforcement guessed for opponent in this turn
     int troopsLeftThisTurn;		                        //Gets subtracted from every estimated attack / placement of the Opponent
@@ -53,50 +51,13 @@ private:
     SuperRegionCost SuperRegionAttemptingNow;           //SuperRegion currently persuing from the list of eligible SuperRegions @  SuperRegionPursue
     std::vector<int> RegionsAttemptingNow;
 
-    std::vector<int> staticCostIndex =  {3, 4, 6, 8, 9, 11, 13, 14, 16, 18, 19,
-                                21, 23, 24, 26, 28, 29, 31, 33, 34, 36,
-                                38, 39, 41, 43, 44, 46, 48, 49, 51, 53,
-                                54, 56, 58, 59, 61, 63, 64, 66, 68, 69,
-                                71, 73, 74, 76, 78, 79, 81, 82, 84, 86,
-                                88, 89, 91, 93, 94, 96, 98, 99, 101, 103,
-                                104, 106, 108, 109, 111, 113, 114, 116, 118, 119,
-                                121, 123, 124, 126, 128, 129, 131, 133, 134, 136,
-                                138, 139, 141, 143, 144, 146, 148, 149, 151, 153,
-                                154, 156, 158, 159, 161, 163, 164, 166, 168, 175};
-
 
     void simulate();            //where the actual one to many mappoing, region selection and battle simulation happens
                                 //calls MCTSManager::simlateBattle via a function pointer
                                 //gets called by RecalculateStrength()
-
-    void calculateCost();
     void output_list_contents(std::vector<tuple<int, int, int, bool>> &myList);
-    void output_list_contents(std::vector<tuple<int, int, int>> &myList);
     void output_list_contents(std::vector<tuple<int, int>> &myList);
 
-    //template to sort vector of tuples in ascending order
-    template<int M, template<typename> class F = std::less>
-    struct TupleCompareAscending
-    {
-        template<typename T>
-        //overloaded operator functor
-        bool operator()(T const &t1, T const &t2)
-        {
-            return F<typename tuple_element<M,T>::type>()(std::get<M>(t1), std::get<M>(t2));
-        }
-    };
-
-    //template to sort vector of tuples in ascending order
-    template<int M, template<typename> class F = std::greater>
-    struct TupleCompareDescending
-    {
-        template<typename T>
-        //overloaded operator functor
-        bool operator()(T const &t1, T const &t2)
-        {
-            return F<typename tuple_element<M,T>::type>()(std::get<M>(t1), std::get<M>(t2));
-        }
-    };
 
 public:
 
@@ -112,7 +73,7 @@ public:
 
     //public fields
     std::vector<tuple<int, int>> OpponentQueueRegions;
-    std::vector<tuple<int, int, int>> OpponentTotalRegion;  //1st param - superRegion, 2nd param - Region, 3rd param - Troop #
+    std::vector<tuple<int, int>> OpponentTotalRegion;
     regionToSrMapping regionToSuperRegionMap;
     regionToSrMapping superRegionToRegionMap;
 
