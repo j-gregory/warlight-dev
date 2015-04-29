@@ -365,7 +365,18 @@ void Bot::updateRegion(unsigned region_id, std::string player_name, int num_armi
   regions[region_id].setArmies(num_armies);
   regions[region_id].setOwner(player_name);
   if (player_name == bot_name)
+  {
     owned_regions.push_back(region_id);
+    opponent_bot->ObserveRegion(OpponentBot::RegionOwner::PlayerBot, region_id, num_armies);
+  }
+  else if(player_name == opponent_bot_name)
+  {
+    opponent_bot->ObserveRegion(OpponentBot::RegionOwner::OppoentBot, region_id, num_armies);
+  }
+  else
+  {
+    opponent_bot->ObserveRegion(OpponentBot::RegionOwner::Neutral, region_id, num_armies);
+  }
 }
 
 void Bot::resetAvailableRegions()

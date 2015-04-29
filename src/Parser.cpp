@@ -103,6 +103,8 @@ void Parser::parseSettings()
   {
     std::cin >> num_armies;
     bot->setArmiesLeft(num_armies);
+    bot->opponent_bot->SetStartingTroop(num_armies);
+
 #ifdef DEBUG_PRINT
     std::cout << "settings starting_armies " << num_armies << "\n";
 #endif // DEBUG_PRINT
@@ -192,7 +194,10 @@ void Parser::parseUpdateMap()       //kq: This needs to be fleshed out for oppon
   {
     bot->updateRegion(region_id, player_name, num_armies);
     if (std::cin.peek()== '\n')
+    {
+      //bot->opponent_bot->Refresh();
       break;
+    }
   }
 }
 
@@ -324,7 +329,10 @@ void Parser::parseOpponentStartingRegions()
     {
         bot->opponent_bot->AddRegion(region, 0);    //we are passing 0, b/c we don't really know the # of troops in that area until update_map phase
         if(std::cin.peek() == '\n')
+        {
+            //bot->opponent_bot->Refresh();
             break;
+        }
     }
 }
 
