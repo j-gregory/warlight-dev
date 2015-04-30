@@ -1,18 +1,18 @@
 #include "State.h"
 
-State::State() : win_percentage(0.5)
+State::State() : win_percentage(0.5), num_visits(0), Qval(0.0)
 {
   name = "";
   move = "No moves\n";
 }
 
-State::State(std::string n) : win_percentage(0.5)
+State::State(std::string n) : win_percentage(0.5), num_visits(0), Qval(0.)
 {
   name = n;
   move = "No moves\n";
 }
 
-State::State(std::string n, std::vector<Region> all, std::vector<int> owned) : win_percentage(0.5)
+State::State(std::string n, std::vector<Region> all, std::vector<int> owned) : win_percentage(0.5), num_visits(0), Qval(0.0)
 {
   name = n;
   all_regions = all;
@@ -20,7 +20,7 @@ State::State(std::string n, std::vector<Region> all, std::vector<int> owned) : w
   move = "No moves\n";
 }
 
-State::State(std::string n, std::vector<Region> all, std::vector<int> owned, double p)
+State::State(std::string n, std::vector<Region> all, std::vector<int> owned, double p) : num_visits(0), Qval(0.0)
 {
   name = n;
   all_regions = all;
@@ -29,7 +29,7 @@ State::State(std::string n, std::vector<Region> all, std::vector<int> owned, dou
   move = "No moves\n";
 }
 
-State::State(std::string n, std::vector<Region> all, std::vector<int> owned, double p, OpponentBot *opponentBot)
+State::State(std::string n, std::vector<Region> all, std::vector<int> owned, double p, OpponentBot *opponentBot) : num_visits(0), Qval(0.0)
 {
   name = n;
   all_regions = all;
@@ -39,7 +39,7 @@ State::State(std::string n, std::vector<Region> all, std::vector<int> owned, dou
   opponent_bot = opponentBot;
 }
 
-State::State(std::string n, std::vector<Region> all, std::vector<int> owned, double p, int enemyReinforcement, int enemyRegionConcentrated) : opponent_reinforcement(enemyReinforcement), opponent_momentumRegion(enemyRegionConcentrated)
+State::State(std::string n, std::vector<Region> all, std::vector<int> owned, double p, int enemyReinforcement, int enemyRegionConcentrated) : num_visits(0), Qval(0.0), opponent_reinforcement(enemyReinforcement), opponent_momentumRegion(enemyRegionConcentrated)
 {
   name = n;
   all_regions = all;
@@ -56,11 +56,20 @@ State::~State()
 bool operator==(const State& s1, const State& s2)
 {
   return ( (s1.name == s2.name) &&
+	   (s1.all_regions == s2.all_regions) &&
 	   (s1.owned_regions == s2.owned_regions) &&
 	   //std::equal(s1.owned_regions.begin(), s1.owned_regions.end(), s2.owned_regions) &&
 	   (s1.move == s2.move) &&
 	   (s1.win_percentage == s2.win_percentage) );
+}
 
+bool operator!=(const State& s1, const State& s2)
+{
+  return ( (s1.name != s2.name) ||
+	   (s1.all_regions != s2.all_regions) ||
+	   (s1.owned_regions != s2.owned_regions) ||
+	   (s1.move != s2.move) ||
+	   (s1.win_percentage != s2.win_percentage) );
 }
 
 void State::setName(std::string n)
@@ -105,6 +114,16 @@ void State::setMove(std::string m)
 void State::setWinPercentage(double p)
 {
   win_percentage = p;
+}
+
+void State::setNumVisits(int n)
+{
+  num_visits = n;
+}
+
+void State::setQval(double q)
+{
+  Qval = q;
 }
 
 void State::addNewOwnedRegion(int region_id)

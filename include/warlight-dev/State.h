@@ -20,6 +20,8 @@ class State
   std::vector<int> owned_regions;	//kq: legacy list is vector<Region>
   std::string move;
   double win_percentage;
+  int num_visits;
+  double Qval;
 
   //Use either this
    OpponentBot *opponent_bot;          //kq: introduced so that in mcts->execute() can take advantage of :
@@ -29,6 +31,7 @@ class State
   //Or use this
   int opponent_reinforcement;
   int opponent_momentumRegion;
+
  public:
   State();
   State(std::string n);
@@ -44,6 +47,8 @@ class State
   std::vector<int> getOwnedRegions()    const { return owned_regions; }
   std::string getMove()                 const { return move; }
   double getWinPercentage()             const { return win_percentage; }
+  int getNumVisits()                    const { return num_visits; }
+  double getQval()                      const { return Qval; }
 
   /* Setters */
   void setName(std::string n);
@@ -51,10 +56,14 @@ class State
   void setArmies(int region_id, int armies);
   void setMove(std::string m);
   void setWinPercentage(double p);
+  void setNumVisits(int n);
+  void setQval(double q);
 
   void addNewOwnedRegion(int region_id);  //kq: originally input param was type Region
+  void incrementNumVisits() { num_visits++; }
 
   friend bool operator== (const State& s1, const State& s2);
+  friend bool operator!= (const State& s1, const State& s2);
 
 
 };

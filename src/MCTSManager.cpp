@@ -40,6 +40,8 @@ std::string MCTSManager::execute(std::string name, std::vector<Region> all_regio
    *  ------------------------------------------------------------------------------
    */
   std::cout << "Starting SELECTION process\n";
+
+  // SELECTION PROCESS - RANDOM
   TreeSiblingIterator node_itr = game_tree.begin();
   //int num_nodes = game_tree.size();
   int max_depth = game_tree.max_depth();              // Opportunity for optimization!
@@ -65,6 +67,15 @@ std::string MCTSManager::execute(std::string name, std::vector<Region> all_regio
     //leaf = game_tree.begin(loc);
     curr_depth++;
   }
+
+  // SELECTION PROCESS - UCT
+  /*
+  TreeFixedDepthIterator node_itr = game_tree.begin_fixed(game_tree.begin(), 1);
+  std::vector<State> envelope; 
+  State selection;
+  UCT(node_itr, 3, envelope, selection);
+  */
+
   std::cout << "Randomly selected leaf: " << (*node_itr).getName() << std::endl;
 
 
@@ -124,6 +135,75 @@ std::string MCTSManager::execute(std::string name, std::vector<Region> all_regio
 
   // Find our best move - Find child node with largest win_percentage, return that command
   return (name + findBestMove(game_tree));
+}
+
+double MCTSManager::UCT(TreeFixedDepthIterator& node_itr, int cutoff, std::vector<State> envelope, State& s_prime)
+{
+  State s = (*node_itr);
+  int num_children = node_itr.number_of_children();
+  if(num_children == 0) return 0.0;
+  if(cutoff == 0) return 5.0;  // @TODO: Fix this
+
+  std::vector<State> untried;
+  if(std::find(envelope.begin(), envelope.end(), (*node_itr)) == envelope.end())
+  {
+    // (*node_itr).setQval(0);   // Actually need this?
+    (*node_itr).setNumVisits(0);
+    envelope.push_back(*node_itr);
+
+    // All <action, states> are applicable in our case
+    for(int i = 0; i < num_children; i++)
+    {
+      node_itr++;
+      (*node_itr).setQval(0.0);
+      (*node_itr).setNumVisits(0);
+      untried.push_back(*node_itr);
+    }
+  }
+
+  // @TODO: Check this, could be wrong!
+  //node_itr = game_tree.begin_fixed(game_tree.begin(), 1);
+  node_itr = node_itr.begin();
+
+  int num_untried = (int)untried.size();
+  if(num_untried > 0)
+  {
+    // Choose random next state from untried
+    int rand_index = rand() % num_untried;
+    s_prime = untried[rand_index];
+  }
+  else
+  {
+    // Choose state with minimum (Q - C(log(n)/n') value
+    double uct_val = 100000;
+    for(int i = 0; i < num_children; i++)  // num_children == num_untried ??
+    {
+      node_itr++;
+      double tmp_val = s.getQval() - 2*pow(log(s.getNumVisits()/(*node_itr).getNumVisits()), 0.5); 
+      if(tmp_val < uct_val)
+      {
+	s_prime = (*node_itr);
+	uct_val = tmp_val;
+      }
+    }
+  }
+
+  // No need to sample, already have next state
+  
+  // Perform cost rollout using UCT with cutoff
+  // @TODO: Again, check this for the same reason as previous check above
+  node_itr = node_itr.begin();
+  while((*node_itr) != s_prime) node_itr++;
+  double cost_rollout = 1 + UCT(node_itr, --cutoff, envelope, s_prime);
+
+  // Update current state's Q and n values
+  int num_visits = (*node_itr).getNumVisits();
+  (*node_itr).setQval(((num_visits*(*node_itr).getQval())+cost_rollout) / (1+num_visits));
+  (*node_itr).incrementNumVisits();
+  // @TODO: Need to actually update state in node_itr because this won't take effect out of scope
+  s.incrementNumVisits();
+
+  return cost_rollout;
 }
 
 std::string MCTSManager::getRandomMove(State& state)    //kq: who is calling it ?
