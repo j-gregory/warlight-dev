@@ -69,12 +69,11 @@ std::string MCTSManager::execute(std::string name, std::vector<Region> all_regio
   }
 
   // SELECTION PROCESS - UCT
-  /*
-  TreeFixedDepthIterator node_itr = game_tree.begin_fixed(game_tree.begin(), 1);
-  std::vector<State> envelope; 
-  State selection;
-  UCT(node_itr, 3, envelope, selection);
-  */
+  ////TreeFixedDepthIterator node_itr = game_tree.begin_fixed(game_tree.begin(), 1);
+  //TreeIterator node_itr = game_tree.begin();
+  //State selection = UCT(node_itr);
+
+  // @TODO: Will need to reset nodes' numvisit count
 
   std::cout << "Randomly selected leaf: " << (*node_itr).getName() << std::endl;
 
@@ -137,7 +136,23 @@ std::string MCTSManager::execute(std::string name, std::vector<Region> all_regio
   return (name + findBestMove(game_tree));
 }
 
-double MCTSManager::UCT(TreeFixedDepthIterator& node_itr, int cutoff, std::vector<State> envelope, State& s_prime)
+State MCTSManager::UCT(TreeIterator& node_itr)
+{
+  State selection;
+  int time_left = 5;   // Could incorporate actual time later
+  std::vector<State> envelope;
+  double cost = 0;
+  while(time_left > 0)
+  {
+    cost = UCTHelper(node_itr, 3, envelope, selection);
+    node_itr = node_itr.begin();
+    time_left--;
+  }
+  return selection;
+}
+
+
+double MCTSManager::UCTHelper(TreeIterator& node_itr, int cutoff, std::vector<State> envelope, State& s_prime)
 {
   State s = (*node_itr);
   int num_children = node_itr.number_of_children();
@@ -147,7 +162,6 @@ double MCTSManager::UCT(TreeFixedDepthIterator& node_itr, int cutoff, std::vecto
   std::vector<State> untried;
   if(std::find(envelope.begin(), envelope.end(), (*node_itr)) == envelope.end())
   {
-    // (*node_itr).setQval(0);   // Actually need this?
     (*node_itr).setNumVisits(0);
     envelope.push_back(*node_itr);
 
@@ -161,22 +175,26 @@ double MCTSManager::UCT(TreeFixedDepthIterator& node_itr, int cutoff, std::vecto
     }
   }
 
-  // @TODO: Check this, could be wrong!
+  // Return iterator to current "root"
   //node_itr = game_tree.begin_fixed(game_tree.begin(), 1);
-  node_itr = node_itr.begin();
+  //node_itr = node_itr.begin();
+  for(int i = 0; i < num_children; i++) node_itr--;
 
   int num_untried = (int)untried.size();
   if(num_untried > 0)
   {
     // Choose random next state from untried
     int rand_index = rand() % num_untried;
-    s_prime = untried[rand_index];
+    //s_prime = untried[rand_index];
+    for(int i = 0; i != rand_index; i++)
+      node_itr++;
+    s_prime = (*node_itr);
   }
   else
   {
     // Choose state with minimum (Q - C(log(n)/n') value
     double uct_val = 100000;
-    for(int i = 0; i < num_children; i++)  // num_children == num_untried ??
+    for(int i = 0; i < num_children; i++)
     {
       node_itr++;
       double tmp_val = s.getQval() - 2*pow(log(s.getNumVisits()/(*node_itr).getNumVisits()), 0.5); 
@@ -186,15 +204,14 @@ double MCTSManager::UCT(TreeFixedDepthIterator& node_itr, int cutoff, std::vecto
 	uct_val = tmp_val;
       }
     }
+    while((*node_itr) != s_prime) node_itr--;
   }
 
   // No need to sample, already have next state
+  // At this point, iterator should be at next state and s_prime should be set
   
   // Perform cost rollout using UCT with cutoff
-  // @TODO: Again, check this for the same reason as previous check above
-  node_itr = node_itr.begin();
-  while((*node_itr) != s_prime) node_itr++;
-  double cost_rollout = 1 + UCT(node_itr, --cutoff, envelope, s_prime);
+  double cost_rollout = 1 + UCTHelper(node_itr, --cutoff, envelope, s_prime);
 
   // Update current state's Q and n values
   int num_visits = (*node_itr).getNumVisits();

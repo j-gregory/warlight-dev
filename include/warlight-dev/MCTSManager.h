@@ -18,6 +18,7 @@ class State;
 
 typedef tree<State> Tree;
 typedef tree<State>::iterator TreeIterator;
+typedef tree<State>::pre_order_iterator TreePreOrderIterator;  // Default, same as TreeIterator
 typedef tree<State>::sibling_iterator TreeSiblingIterator;
 typedef tree<State>::leaf_iterator TreeLeafIterator;
 typedef tree<State>::fixed_depth_iterator TreeFixedDepthIterator;
@@ -35,7 +36,8 @@ class MCTSManager
   void printSubtreeBracketed(const Tree& t, Tree::iterator iRoot);
 
  protected:
-  double UCT(TreeFixedDepthIterator& node_itr, int cutoff, std::vector<State> envelope, State& s_prime);
+  State UCT(TreeIterator& node_itr);
+  double UCTHelper(TreeIterator& node_itr, int cutoff, std::vector<State> envelope, State& s_prime);
   std::string getRandomMove(State& state);
   void simulateOurTurn(State& state, State& result);
   void simulateOpponentsTurn(State& state, State& result);
