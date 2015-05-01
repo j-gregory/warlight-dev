@@ -31,125 +31,128 @@ std::string MCTSManager::execute(std::string name, std::vector<Region> all_regio
   // This will be based on time, but for debuggin purposes just an arbitrary number of iterations
   int iterations = 0;
   //while(time is almost up)
-  //while(iterations < 10)
-
-  /*! ------------------------------------------------------------------------------
-   *  SELECTION
-   *  UCT (and win percentage) WILL BE USED IN THIS STEP TO BALANCE EXPLORATION AND EXPLOITATION
-   *  For now, traverse "random" branch until random location or child node
-   *  ------------------------------------------------------------------------------
-   */
-  std::cout << "Starting SELECTION process" << std::endl;
-  /*
-  // SELECTION PROCESS - RANDOM
-  TreeSiblingIterator node_itr = game_tree.begin();
-  //int num_nodes = game_tree.size();
-  int max_depth = game_tree.max_depth();              // Opportunity for optimization!
-  if(max_depth == 0) max_depth = 1;                   // Avoid floating point exception!
-  int rand_depth = rand() % max_depth;
-  int curr_depth = 0;                                 // Effectively creates new random branches
-  std::cout << "Random depth of search is " << rand_depth << " \n";
-  // If we have reached random depth OR a child node, stop and simulate from this location
-  while((curr_depth < rand_depth) && (node_itr.number_of_children() > 0))
+  while(iterations < 10)
   {
-    // Traverse random children
-    int index = 0;
-    int random = rand() % node_itr.number_of_children();
-    std::cout << "Current node has " << node_itr.number_of_children() << " children" << std::endl;
-    std::cout << "Randomly chose " << random << " to traverse " << std::endl;
-    while(index != random)
+    std::cout << "***** NEW ITERATION OF MCTS *****" << std::endl;
+    std::cout << "*     game_tree has " << game_tree.size() << " nodes " << std::endl;
+
+    /*! ------------------------------------------------------------------------------
+     *  SELECTION
+     *  UCT (and win percentage) WILL BE USED IN THIS STEP TO BALANCE EXPLORATION AND EXPLOITATION
+     *  For now, traverse "random" branch until random location or child node
+     *  ------------------------------------------------------------------------------
+     */
+    std::cout << "Starting SELECTION process" << std::endl;
+    /*
+    // SELECTION PROCESS - RANDOM
+    TreeSiblingIterator node_itr = game_tree.begin();
+    //int num_nodes = game_tree.size();
+    int max_depth = game_tree.max_depth();              // Opportunity for optimization!
+    if(max_depth == 0) max_depth = 1;                   // Avoid floating point exception!
+    int rand_depth = rand() % max_depth;
+    int curr_depth = 0;                                 // Effectively creates new random branches
+    std::cout << "Random depth of search is " << rand_depth << " \n";
+    // If we have reached random depth OR a child node, stop and simulate from this location
+    while((curr_depth < rand_depth) && (node_itr.number_of_children() > 0))
     {
-      node_itr++;
-      index++;
+      // Traverse random children
+      int index = 0;
+      int random = rand() % node_itr.number_of_children();
+      std::cout << "Current node has " << node_itr.number_of_children() << " children" << std::endl;
+      std::cout << "Randomly chose " << random << " to traverse " << std::endl;
+      while(index != random)
+      {
+        node_itr++;
+	index++;
+      }
+      // Need this ... no?
+      //TreeIterator loc = std::find(game_tree.begin(), game_tree.end(), (*leaf));
+      //leaf = game_tree.begin(loc);
+      curr_depth++;
+      }
+    */
+    
+    // SELECTION PROCESS - UCT
+    ////TreeFixedDepthIterator node_itr = game_tree.begin_fixed(game_tree.begin(), 1);
+    std::cout << "Preparing to run UCT algorithm" << std::endl;
+    TreeIterator node_itr = game_tree.begin();
+    State selection = UCT(node_itr);
+    std::cout << "UCT Algorithm found selection state and returned" << std::endl;
+    std::cout << "Selection: " << selection.getName() << std::endl;
+    node_itr = game_tree.begin();
+    while((*node_itr) != selection) node_itr++;
+    
+    std::cout << "Randomly selected leaf: " << (*node_itr).getName() << std::endl;
+    
+    
+    /*! ------------------------------------------------------------------------------
+     *  EXPANSION
+     *  Expand current path by one node representing a random move
+     *  ------------------------------------------------------------------------------
+     */
+    State result(name, all_regions, owned_regions, 0.5);
+    std::cout << "Starting EXPANSION process\n";
+    simulateOurTurn((*node_itr), result);
+    
+    // Add new node to tree, iterate there
+    node_itr = game_tree.append_child(node_itr, result);
+    std::cout << "Now at new leaf: " << (*node_itr).getName() << std::endl;
+    
+    
+    /*! ------------------------------------------------------------------------------
+     *  SIMULATION
+     *  Simulate the rest of the game to determine the win_percentage of added node
+     *  ------------------------------------------------------------------------------
+     */
+    std::cout << "Starting SIMULATION process\n";
+    State curr = result;
+    State next;
+    int steps = 0;
+    // while(some amount of time)
+    while(steps < 5)
+    {
+      // Their turn? Guess one of their moves
+      if(steps%2 == 0) simulateOpponentsTurn(curr, next); //kq: This could be expanded with opponent_bot
+      // Our turn? Simulate a random move
+      else simulateOurTurn(curr, next);                   //kq: This could be expanded with opponent_bot
+      
+      curr = next;
+      steps++;
     }
-    // Need this ... no?
-    //TreeIterator loc = std::find(game_tree.begin(), game_tree.end(), (*leaf));
-    //leaf = game_tree.begin(loc);
-    curr_depth++;
-  }
-  */
-
-  // SELECTION PROCESS - UCT
-  ////TreeFixedDepthIterator node_itr = game_tree.begin_fixed(game_tree.begin(), 1);
-  std::cout << "Preparing to run UCT algorithm" << std::endl;
-  TreeSiblingIterator node_itr = game_tree.begin();
-  State selection = UCT(node_itr);
-  std::cout << "UCT Algorithm found selection state and returned" << std::endl;
-  std::cout << "Selection: " << selection.getName() << std::endl;
-  node_itr = game_tree.begin();
-  while((*node_itr) != selection) node_itr++;
-
-  std::cout << "Randomly selected leaf: " << (*node_itr).getName() << std::endl;
-
-
-  /*! ------------------------------------------------------------------------------
-   *  EXPANSION
-   *  Expand current path by one node representing a random move
-   *  ------------------------------------------------------------------------------
-   */
-  State result(name, all_regions, owned_regions, 0.5);
-  std::cout << "Starting EXPANSION process\n";
-  simulateOurTurn((*node_itr), result);
-
-  // Add new node to tree, iterate there
-  node_itr = game_tree.append_child(node_itr, result);
-  std::cout << "Now at new leaf: " << (*node_itr).getName() << std::endl;
-
-
-  /*! ------------------------------------------------------------------------------
-   *  SIMULATION
-   *  Simulate the rest of the game to determine the win_percentage of added node
-   *  ------------------------------------------------------------------------------
-   */
-  std::cout << "Starting SIMULATION process\n";
-  State curr = result;
-  State next;
-  int steps = 0;
-  // while(some amount of time)
-  while(steps < 5)
-  {
-    // Their turn? Guess one of their moves
-    if(steps%2 == 0) simulateOpponentsTurn(curr, next); //kq: This could be expanded with opponent_bot
-    // Our turn? Simulate a random move
-    else simulateOurTurn(curr, next);                   //kq: This could be expanded with opponent_bot
-
-    curr = next;
-    steps++;
+    
+    
+    /*! ------------------------------------------------------------------------------
+     *  BACK PROPAGATION
+     *  Update all parent nodes using win_percentage information we gained
+     *  ------------------------------------------------------------------------------
+     */
+    std::cout << "Starting BACK PROPAGATION process\n";
+    double updated_win_percentage = next.getWinPercentage();
+    while(node_itr != game_tree.begin())
+    {
+      (*node_itr).setWinPercentage(updated_win_percentage);
+      node_itr = game_tree.parent(node_itr);
+    }
+    
+    // Reset nodes' Q and numVisit values
+    node_itr = game_tree.begin();
+    while(game_tree.is_valid(node_itr))
+    {
+      (*node_itr).setNumVisits(0);
+      (*node_itr).setQval(0.0);
+      node_itr++;
+    }
+    // DONE SINGLE ITERATION OF MCTS
+    iterations++;
   }
 
-
-  /*! ------------------------------------------------------------------------------
-   *  BACK PROPAGATION
-   *  Update all parent nodes using win_percentage information we gained
-   *  ------------------------------------------------------------------------------
-   */
-  std::cout << "Starting BACK PROPAGATION process\n";
-  double updated_win_percentage = next.getWinPercentage();
-  while(node_itr != game_tree.begin())
-  {
-    (*node_itr).setWinPercentage(updated_win_percentage);
-    node_itr = game_tree.parent(node_itr);
-  }
-
-  // Reset nodes' Q and numVisit values
-  node_itr = game_tree.begin();
-  while(game_tree.is_valid(node_itr))
-  {
-    (*node_itr).setNumVisits(0);
-    (*node_itr).setQval(0.0);
-    node_itr++;
-  }
-
-  // DONE SINGLE ITERATION OF MCTS
-
-  //}
   /* =============================================================================== */
 
   // Find our best move - Find child node with largest win_percentage, return that command
   return (name + findBestMove(game_tree));
 }
 
-State MCTSManager::UCT(TreeSiblingIterator& node_itr)
+State MCTSManager::UCT(TreeIterator& node_itr)
 {
   std::cout << "Starting UCT algorithm" << std::endl;
 
@@ -172,7 +175,7 @@ State MCTSManager::UCT(TreeSiblingIterator& node_itr)
 }
 
 
-double MCTSManager::UCTHelper(TreeSiblingIterator& node_itr, int cutoff, std::vector<State> envelope, State& s_prime)
+double MCTSManager::UCTHelper(TreeIterator& node_itr, int cutoff, std::vector<State> envelope, State& s_prime)
 {
   std::cout << "Starting UCTHelper" << std::endl;
   State s = (*node_itr);
@@ -206,10 +209,10 @@ double MCTSManager::UCTHelper(TreeSiblingIterator& node_itr, int cutoff, std::ve
   for(int i = 0; i < num_children; i++) node_itr--;
 
   int num_untried = (int)untried.size();
-  std::cout << "Untried actions: " << num_untried << "\n";
+  std::cout << "Untried actions: " << num_untried << std::endl;
   if(num_untried > 0)
   {
-    std::cout << "Choosing random <action, state> \n";
+    std::cout << "Choosing random <action, state>" << std::endl;
     // Choose random next state from untried
     int rand_index = rand() % num_untried;
     //s_prime = untried[rand_index];
@@ -219,13 +222,18 @@ double MCTSManager::UCTHelper(TreeSiblingIterator& node_itr, int cutoff, std::ve
   }
   else
   {
-    std::cout << "Choosing argmin <action, state> according to UCT formula \n";
+    std::cout << "Choosing argmin <action, state> according to UCT formula" << std::endl;
     // Choose state with minimum (Q - C(log(n)/n') value
     double uct_val = 100000;
     for(int i = 0; i < num_children; i++)
     {
       node_itr++;
-      double tmp_val = s.getQval() - 2*pow(log(s.getNumVisits()/(*node_itr).getNumVisits()), 0.5); 
+      double tmp_val = 100000;
+      if((*node_itr).getNumVisits() == 0) 
+	tmp_val = (s.getQval() - 2);
+      else
+	tmp_val = s.getQval() - 2*pow(log(s.getNumVisits()/(*node_itr).getNumVisits()), 0.5); 
+
       if(tmp_val < uct_val)
       {
 	s_prime = (*node_itr);
@@ -238,11 +246,11 @@ double MCTSManager::UCTHelper(TreeSiblingIterator& node_itr, int cutoff, std::ve
   // No need to sample, already have next state
   // At this point, iterator should be at next state and s_prime should be set
   
-  std::cout << "Performing cost rollout (recursive UCT)\n";
+  std::cout << "Performing cost rollout (recursive UCT)" << std::endl;
   // Perform cost rollout using UCT with cutoff
   double cost_rollout = 1 + UCTHelper(node_itr, --cutoff, envelope, s_prime);
 
-  std::cout << "Updating UCT values of states\n";
+  std::cout << "Updating UCT values of states" << std::endl;
   // Update current state's Q and n values
   int num_visits = (*node_itr).getNumVisits();
   (*node_itr).setQval(((num_visits*(*node_itr).getQval())+cost_rollout) / (1+num_visits));
@@ -254,7 +262,7 @@ double MCTSManager::UCTHelper(TreeSiblingIterator& node_itr, int cutoff, std::ve
   // Return iterator to next state, do we need this?
   //while((*node_itr) != s_prime) node++;
   
-  std::cout << "Cost rollout for this state is " << cost_rollout << "\n";
+  std::cout << "Cost rollout for this state is " << cost_rollout << std::endl;
 
   return cost_rollout;
 }
