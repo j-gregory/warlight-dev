@@ -35,8 +35,10 @@ std::string MCTSManager::execute(std::string name, std::vector<Region> all_regio
   //while(time is almost up)
   while(iterations < 10)
   {
-    std::cout << "***** NEW ITERATION OF MCTS *****" << std::endl;
-    std::cout << "*     game_tree has " << game_tree.size() << " nodes " << std::endl;
+    std::cout << "*************** NEW ITERATION OF MCTS ****************" << std::endl;
+    std::cout << "***********     game_tree has " << game_tree.size() << " nodes " << std::endl;
+
+    printTree(game_tree);
 
     /*! ------------------------------------------------------------------------------
      *  SELECTION
@@ -179,7 +181,8 @@ State MCTSManager::UCT(TreeIterator& node_itr)
     std::cout << "Calling UCTHelper from node: " << (*node_itr).getName() << std::endl;
     cost = UCTHelper(node_itr, 3, envelope, selection);
     std::cout << "Returned from UCTHelper with cost of " << cost << std::endl;
-    node_itr = node_itr.begin();
+    //node_itr = node_itr.begin();
+    while((*node_itr).getName() != "root") node_itr--;
     time_left--;
     std::cout << "Returned iterator to head of tree, time left is " << time_left << std::endl;
   }
