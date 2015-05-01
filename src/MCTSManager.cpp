@@ -14,17 +14,17 @@ MCTSManager::~MCTSManager()
 
 std::string MCTSManager::execute(std::string name, std::vector<Region> all_regions, std::vector<int> owned_regions, double timelimit) //kq: This could be expanded with opponent_bot
 {
-  std::cout << "Executing MCTS" << std::endl;
-  std::cout << "Initializing tree" << std::endl;
+  //std::cout << "Executing MCTS" << std::endl;
+  //std::cout << "Initializing tree" << std::endl;
 
   // Create root node with current state of game
   Tree game_tree;
   game_tree.insert(game_tree.begin(), State("root", all_regions, owned_regions));
-  std::cout << "Tree initialization complete" << std::endl;
+  //std::cout << "Tree initialization complete" << std::endl;
 
-  std::cout << "Printing tree\n";
+  //std::cout << "Printing tree\n";
   ////kptree::print_tree_bracketed(test, std::cout);
-  printTree(game_tree);
+  //printTree(game_tree);
   ////printTreeBracketed(game_tree);
 
   bool our_turn = true;
@@ -35,10 +35,10 @@ std::string MCTSManager::execute(std::string name, std::vector<Region> all_regio
   //while(time is almost up)
   while(iterations < 10)
   {
-    std::cout << "*************** NEW ITERATION OF MCTS ****************" << std::endl;
-    std::cout << "***********     game_tree has " << game_tree.size() << " nodes " << std::endl;
+    //std::cout << "*************** NEW ITERATION OF MCTS ****************" << std::endl;
+    //std::cout << "***********     game_tree has " << game_tree.size() << " nodes " << std::endl;
 
-    printTree(game_tree);
+    //printTree(game_tree);
 
     /*! ------------------------------------------------------------------------------
      *  SELECTION
@@ -46,7 +46,7 @@ std::string MCTSManager::execute(std::string name, std::vector<Region> all_regio
      *  For now, traverse "random" branch until random location or child node
      *  ------------------------------------------------------------------------------
      */
-    std::cout << "Starting SELECTION process" << std::endl;
+    //std::cout << "Starting SELECTION process" << std::endl;
     /*
     // SELECTION PROCESS - RANDOM
     TreeSiblingIterator node_itr = game_tree.begin();
@@ -78,15 +78,15 @@ std::string MCTSManager::execute(std::string name, std::vector<Region> all_regio
     
     // SELECTION PROCESS - UCT
     ////TreeFixedDepthIterator node_itr = game_tree.begin_fixed(game_tree.begin(), 1);
-    std::cout << "Preparing to run UCT algorithm" << std::endl;
+    //std::cout << "Preparing to run UCT algorithm" << std::endl;
     TreeIterator node_itr = game_tree.begin();
     State selection = UCT(node_itr);
-    std::cout << "UCT Algorithm found selection state and returned" << std::endl;
-    std::cout << "Selection: " << selection.getName() << std::endl;
+    //std::cout << "UCT Algorithm found selection state and returned" << std::endl;
+    //std::cout << "Selection: " << selection.getName() << std::endl;
     node_itr = game_tree.begin();
     while((*node_itr) != selection) node_itr++;
     
-    std::cout << "Randomly selected leaf: " << (*node_itr).getName() << std::endl;
+    //std::cout << "Randomly selected leaf: " << (*node_itr).getName() << std::endl;
     
     
     /*! ------------------------------------------------------------------------------
@@ -94,25 +94,25 @@ std::string MCTSManager::execute(std::string name, std::vector<Region> all_regio
      *  Expand current path by one node representing a random move
      *  ------------------------------------------------------------------------------
      */
-    std::cout << "Starting EXPANSION process\n";
+    //std::cout << "Starting EXPANSION process\n";
     State result(name, all_regions, owned_regions, 0.5);
     if(our_turn)
     {
-      std::cout << "Expanding: Simulating our turn" << std::endl;
+      //std::cout << "Expanding: Simulating our turn" << std::endl;
       simulateOurTurn((*node_itr), result);
     }
     else
     {
-      std::cout << "Expanding: Simulating opponent's turn" << std::endl;
+      //std::cout << "Expanding: Simulating opponent's turn" << std::endl;
       simulateOpponentsTurn((*node_itr), result);
       result.setName("opponent");
     }
     our_turn = (!our_turn);
     
     // Add new node to tree, iterate there
-    std::cout << "* Adding new node to game_tree from " << result.getName() << std::endl;
+    //std::cout << "* Adding new node to game_tree from " << result.getName() << std::endl;
     node_itr = game_tree.append_child(node_itr, result);
-    std::cout << "Now at new leaf: " << (*node_itr).getName() << std::endl;
+    //std::cout << "Now at new leaf: " << (*node_itr).getName() << std::endl;
     
     
     /*! ------------------------------------------------------------------------------
@@ -120,7 +120,7 @@ std::string MCTSManager::execute(std::string name, std::vector<Region> all_regio
      *  Simulate the rest of the game to determine the win_percentage of added node
      *  ------------------------------------------------------------------------------
      */
-    std::cout << "Starting SIMULATION process\n";
+    //std::cout << "Starting SIMULATION process\n";
     State curr = result;
     State next;
     int steps = 0;
@@ -142,7 +142,7 @@ std::string MCTSManager::execute(std::string name, std::vector<Region> all_regio
      *  Update all parent nodes using win_percentage information we gained
      *  ------------------------------------------------------------------------------
      */
-    std::cout << "Starting BACK PROPAGATION process\n";
+    //std::cout << "Starting BACK PROPAGATION process\n";
     double updated_win_percentage = next.getWinPercentage();
     while(node_itr != game_tree.begin())
     {
@@ -170,7 +170,7 @@ std::string MCTSManager::execute(std::string name, std::vector<Region> all_regio
 
 State MCTSManager::UCT(TreeIterator& node_itr)
 {
-  std::cout << "Starting UCT algorithm" << std::endl;
+  //std::cout << "Starting UCT algorithm" << std::endl;
 
   if(node_itr.number_of_children() == 0) return (*node_itr);
 
@@ -180,13 +180,13 @@ State MCTSManager::UCT(TreeIterator& node_itr)
   double cost = 0;
   while(time_left > 0)
   {
-    std::cout << "Calling UCTHelper from node: " << (*node_itr).getName() << std::endl;
+    //std::cout << "Calling UCTHelper from node: " << (*node_itr).getName() << std::endl;
     cost = UCTHelper(node_itr, 3, envelope, selection);
-    std::cout << "Returned from UCTHelper with cost of " << cost << std::endl;
+    //std::cout << "Returned from UCTHelper with cost of " << cost << std::endl;
     //node_itr = node_itr.begin();
     while((*node_itr).getName() != "root") node_itr--;
     time_left--;
-    std::cout << "Returned iterator to head of tree, time left is " << time_left << std::endl;
+    //std::cout << "Returned iterator to head of tree, time left is " << time_left << std::endl;
   }
   return selection;
 }
@@ -194,19 +194,19 @@ State MCTSManager::UCT(TreeIterator& node_itr)
 
 double MCTSManager::UCTHelper(TreeIterator& node_itr, int cutoff, std::vector<State> envelope, State& s_prime)
 {
-  std::cout << "Starting UCTHelper" << std::endl;
+  //std::cout << "Starting UCTHelper" << std::endl;
   State s = (*node_itr);
   int num_children = node_itr.number_of_children();
   if(num_children == 0) return 0.0;
   if(cutoff == 0) return 5.0;  // @TODO: Fix this
 
-  std::cout << "Envelope size: " << envelope.size() << std::endl;
+  //std::cout << "Envelope size: " << envelope.size() << std::endl;
 
   std::vector<State> untried;
   if(std::find(envelope.begin(), envelope.end(), (*node_itr)) == envelope.end() || 
      (int)envelope.size() == 0)
   {
-    std::cout << "State is NOT in envelope, adding ..." << std::endl;
+    //std::cout << "State is NOT in envelope, adding ..." << std::endl;
     (*node_itr).setNumVisits(0);
     envelope.push_back(*node_itr);
 
@@ -226,23 +226,23 @@ double MCTSManager::UCTHelper(TreeIterator& node_itr, int cutoff, std::vector<St
   for(int i = 0; i < num_children; i++) node_itr--;
 
   int num_untried = (int)untried.size();
-  std::cout << "Untried actions: " << num_untried << std::endl;
+  //std::cout << "Untried actions: " << num_untried << std::endl;
   if(num_untried > 0)
   {
-    std::cout << "Choosing random <action, state>" << std::endl;
+    //std::cout << "Choosing random <action, state>" << std::endl;
     // Choose random next state from untried
     int rand_index = rand() % num_untried;
-    std::cout << "rand_index: " << rand_index << std::endl;
+    //std::cout << "rand_index: " << rand_index << std::endl;
     //s_prime = untried[rand_index];
     node_itr++;
     for(int i = 0; i != rand_index; i++)   // != rand_index
       node_itr++;
     s_prime = (*node_itr);
-    std::cout << "UCT - randomly chose state " << s_prime.getName() << std::endl;
+    //std::cout << "UCT - randomly chose state " << s_prime.getName() << std::endl;
   }
   else
   {
-    std::cout << "Choosing argmin <action, state> according to UCT formula" << std::endl;
+    //std::cout << "Choosing argmin <action, state> according to UCT formula" << std::endl;
     // Choose state with minimum (Q - C(log(n)/n') value
     double uct_val = 100000;
     for(int i = 0; i < num_children; i++)
@@ -266,11 +266,11 @@ double MCTSManager::UCTHelper(TreeIterator& node_itr, int cutoff, std::vector<St
   // No need to sample, already have next state
   // At this point, iterator should be at next state and s_prime should be set
   
-  std::cout << "Performing cost rollout (recursive UCT)" << std::endl;
+  //std::cout << "Performing cost rollout (recursive UCT)" << std::endl;
   // Perform cost rollout using UCT with cutoff
   double cost_rollout = 1 + UCTHelper(node_itr, --cutoff, envelope, s_prime);
 
-  std::cout << "Updating UCT values of states" << std::endl;
+  //std::cout << "Updating UCT values of states" << std::endl;
   // Update current state's Q and n values
   int num_visits = (*node_itr).getNumVisits();
   (*node_itr).setQval(((num_visits*(*node_itr).getQval())+cost_rollout) / (1+num_visits));
@@ -282,7 +282,7 @@ double MCTSManager::UCTHelper(TreeIterator& node_itr, int cutoff, std::vector<St
   // Return iterator to next state, do we need this?
   //while((*node_itr) != s_prime) node++;
   
-  std::cout << "Cost rollout for this state is " << cost_rollout << std::endl;
+  //std::cout << "Cost rollout for this state is " << cost_rollout << std::endl;
 
   return cost_rollout;
 }
@@ -291,17 +291,17 @@ std::string MCTSManager::getRandomMove(State& state)    //kq: who is calling it 
 {
   std::string rand_move = "No moves\n";
 
+  /*
   // Look at state.owned_regions, pick a random valid move
-
-  /*  ------------------------------------------------ */
-  /* Implementation for choosing region with largest number of armies */
-  int from_id = 0;
-  //int from_index = 0;
-  int max_armies = 0;
-  int temp_region = 0;
-  int temp_armies = 0;
   std::vector<Region> all_regions = state.getAllRegions();
   std::vector<int> owned_regions  = state.getOwnedRegions();
+  int from_id = 0;
+  int to = 0;
+  int max_armies = 0;
+
+  // Implementation for choosing region with largest number of armies
+  int temp_region = 0;
+  int temp_armies = 0;
   for(int i = 0; i < (int)owned_regions.size(); i++)
   {
     temp_region = all_regions[owned_regions[i]].getID();
@@ -313,30 +313,102 @@ std::string MCTSManager::getRandomMove(State& state)    //kq: who is calling it 
       max_armies = temp_armies;
     }
   }
-  /*  ------------------------------------------------ */
-
+  
   // Find (random) adjacent region
   //int owned_region = all_regions[owned_regions[from_index]].getID();
   //int rand_index = rand() % all_regions[owned_region].getNumNeighbors();
   //int to = all_regions[owned_region].getNeighbors()[rand_index];
-  int rand_index = rand() % all_regions[from_id].getNumNeighbors();
-  int to = all_regions[from_id].getNeighbors()[rand_index];
+  
+  to = from_id;
+  int attempts = 0;
+  int num_neighbors = all_regions[from_id].getNumNeighbors();
+  // Addition: never attack a region we already own (i.e., no transfers)
+  while(std::find(owned_regions.begin(), owned_regions.end(), to) != owned_regions.end() || attempts < 10)
+  {
+    int rand_index = rand() % num_neighbors;
+    to = all_regions[from_id].getNeighbors()[rand_index];
+    attempts++;
+  }
+  if(attempts < 10) found_move = true;
 
   return (all_regions[from_id].getOwner() +
 	  " attack/transfer " +
 	  std::to_string(from_id) + " " +
 	  std::to_string(to) + " " +
 	  std::to_string(max_armies-1) + "\n");
+  */
+
+  // Convert owned regions to map, automatically sorts
+  std::vector<Region> all_regions = state.getAllRegions();
+  std::vector<int> owned_regions  = state.getOwnedRegions();
+  std::map<int, int> armies_to_region;
+  for(int i = 0; i < (int)owned_regions.size(); i++)
+  {
+    int region_id = owned_regions[i];
+    int num_armies = all_regions[region_id].getNumArmies();
+    armies_to_region[num_armies] = region_id;
+  }
+  
+  // Iterate through owned regions based on largest number of armies, 
+  // attempt to find random neighbor that we don't own so we can attack
+  bool found_move = false;
+  int from_id = 0;
+  int to_id = 0;
+  int max_armies = 0;
+  for(std::map<int, int>::reverse_iterator map_itr = armies_to_region.rbegin();
+      map_itr != armies_to_region.rend();
+      ++map_itr)
+  {
+    from_id = map_itr->second;
+    max_armies = map_itr->first;
+
+    // Find (random) adjacent region
+    to_id = from_id;
+    int attempts = 0;
+    int num_neighbors = all_regions[from_id].getNumNeighbors();
+    // Addition: never attack a region we already own (i.e., no transfers)
+    while(std::find(owned_regions.begin(), owned_regions.end(), to_id) != owned_regions.end())
+    {
+      if(attempts >= num_neighbors) break;
+      //int rand_index = rand() % num_neighbors;
+      //to_id = all_regions[from_id].getNeighbors()[rand_index];
+      to_id = all_regions[from_id].getNeighbors()[attempts];
+      attempts++;
+    }
+
+    if(attempts < num_neighbors) 
+    {
+      found_move = true;
+      break;
+    }
+  }
+
+  // If didn't find move, do some transfer
+  if(!found_move)
+  {
+    std::map<int, int>::reverse_iterator map_itr = armies_to_region.rbegin();
+    from_id = map_itr->second;
+    max_armies = map_itr->first;
+    int num_neighbors = all_regions[from_id].getNumNeighbors();
+    int rand_index = rand() % num_neighbors;
+    to_id = all_regions[from_id].getNeighbors()[rand_index];
+  }
+
+  return (all_regions[from_id].getOwner() +
+	  " attack/transfer " +
+	  std::to_string(from_id) + " " +
+	  std::to_string(to_id) + " " +
+	  std::to_string(max_armies-1) + "\n");
 }
 
 void MCTSManager::simulateOurTurn(State& state, State& result)
 {
-  std::cout << "-- Simulating our turn --" << std::endl;;
+  //std::cout << "-- Simulating our turn --" << std::endl;;
   // Get random, valid move
   std::string move = getRandomMove(state);
 
   // Produce resulting state for random valid move by simulating turn
-  std::cout << "Executing random move: " << move;
+  //std::cout << "Executing random move: " << move;
 
   std::vector<std::string> tokens = split(move, ' ');
   if(tokens[1] == "attack/transfer")
@@ -346,10 +418,10 @@ void MCTSManager::simulateOurTurn(State& state, State& result)
     int attacking_armies = std::stoi(tokens[4]);
     int defending_armies = state.getAllRegions()[to].getNumArmies();
 
-    std::cout << "Simulating attack from region " << from
-	      << " with " << attacking_armies << " armies"
-	      << " to region " << to
-	      << " that has " << defending_armies << " armies " << std::endl;
+    //std::cout << "Simulating attack from region " << from
+    //          << " with " << attacking_armies << " armies"
+    //	        << " to region " << to
+    //	        << " that has " << defending_armies << " armies " << std::endl;
 
     int attacking_destroyed = 0;
     int defending_destroyed = 0;
@@ -360,13 +432,13 @@ void MCTSManager::simulateOurTurn(State& state, State& result)
     int survive_defend = defending_armies - defending_destroyed;
     //if(survive_defend < 0) survive_defend = 0;
 
-    std::cout << "Battle Simulation Results: " << std::endl;
-    std::cout << "attacking_armies: "     << attacking_armies
-	      << " attacking_destroyed: " << attacking_destroyed
-	      << " survive_attack: "      << survive_attack << std::endl;
-    std::cout << "defending_armies: "     << defending_armies
-	      << " defending_destroyed: " << defending_destroyed
-	      << " survive_defend: "      << survive_defend << std::endl;
+    //std::cout << "Battle Simulation Results: " << std::endl;
+    //std::cout << "attacking_armies: "     << attacking_armies
+    //	      << " attacking_destroyed: " << attacking_destroyed
+    //	      << " survive_attack: "      << survive_attack << std::endl;
+    //std::cout << "defending_armies: "     << defending_armies
+    //	      << " defending_destroyed: " << defending_destroyed
+    //	      << " survive_defend: "      << survive_defend << std::endl;
 
     // The outcome of an attack is ONE of the following:
     //   1) Win:  Move the surviving armies onto new region
@@ -378,7 +450,7 @@ void MCTSManager::simulateOurTurn(State& state, State& result)
     // If we won the battle, we need to update the owner and number of armies with how many survived
     if(survive_defend <= 0)
     {
-      std::cout << "Attack: SUCCESS\n";
+      //std::cout << "Attack: SUCCESS\n";
       // Update number of armies in current state
       int remaining_armies = state.getAllRegions()[from].getNumArmies() - attacking_armies;
       state.setArmies(from, remaining_armies);
@@ -397,7 +469,7 @@ void MCTSManager::simulateOurTurn(State& state, State& result)
     // If we lost the battle, we may update the other region's number of surviving armies (defense)
     else
     {
-      std::cout << "Attack: FAILED\n";
+      //std::cout << "Attack: FAILED\n";
       // Update number of armies in current state
       int remaining_attacking_armies =
 	state.getAllRegions()[from].getNumArmies() - attacking_destroyed;  // attacking_armies?
@@ -418,7 +490,7 @@ void MCTSManager::simulateOurTurn(State& state, State& result)
 
 void MCTSManager::simulateOpponentsTurn(State& state, State& result)
 {
-  std::cout << "-- Simulating their turn --" << std::endl;;
+  //std::cout << "-- Simulating their turn --" << std::endl;;
   // @TODO: Implement
   result = state;
 }

@@ -200,11 +200,12 @@ void Bot::analyzeAvailableRegions() //called by Parser::parsePickStartingRegions
 	opponent_regions.push_back(region);         //kq: only place where opponent_regions is updated.
 	belief_regions[region] = opponent_bot_name;
 	opponent_bot->AddRegion(region, 0);             //kq: giving region to opponent_bot
-
-	#ifndef DEBUG_CANCEL_PRINT
+	
+/*
+#ifndef DEBUG_CANCEL_PRINT
         std::cout << "Opponent Bot added region: " << std::to_string(region) << "\n";   //kq: This never got pritned, I wonder if this orutine is working.
-    #endif // DEBUG_PRINT
-
+#endif // DEBUG_PRINT
+*/
       }
     }
   }
@@ -339,7 +340,7 @@ void Bot::executeAction()
 
     // Use MCTS to determine moves
     std::string result  = mcts->execute(bot_name, regions, owned_regions, (double)1000); //kq: This should have another param, opponent_bot;  LEGACY --> mcts->execute(bot_name, regions, 1000)
-    std::cout << result << "\n";
+    std::cout << result;
     std::cout.flush();
   }
 
@@ -404,42 +405,36 @@ void Bot::printStatus() //kq: Add more status messages: regions owned, current t
   //while(std::cin.peek() != '\n' && std::cin >> debug_param)
   while(std::cin >> debug_param)
   {
-
-
-
-      if(debug_param == "opponent")
+    if(debug_param == "opponent")
+    {
+      std::cout << "opponent_bot status: " << endl;
+      std::cout << opponent_bot->printStatus();
+    }
+    
+    if(debug_param == "normal")
+    {
+      std::cout << "Timebank: " << timebank << "\n";
+      std::cout << "Time/move: " << time_per_move << "\n";
+      std::cout << "Max rounds: " << max_rounds << "\n";
+      std::cout << "Bot name: " << bot_name << "\n";
+      std::cout << "Opponent: " << opponent_bot_name << "\n";
+      std::cout << "Num superregions: " << super_regions.size() << "\n";
+      std::cout << "Starting armies: " << armies_left << "\n";
+      //std::cout << "Num starting regions: " << starting_regions.size() << "\n";
+      std::cout << "Pick amount: " << pick_amount << "\n";
+      
+      std::cout << "Opponent Regions: ";
+      for(unsigned int i=0; i<opponent_regions.size(); i++)
       {
-        std::cout << "opponent_bot status: " << endl;
-        std::cout << opponent_bot->printStatus();
+	std::cout << ", "<< std::to_string(opponent_regions[i]) << endl;
       }
-
-      if(debug_param == "normal")
-      {
-        std::cout << "Timebank: " << timebank << "\n";
-        std::cout << "Time/move: " << time_per_move << "\n";
-        std::cout << "Max rounds: " << max_rounds << "\n";
-        std::cout << "Bot name: " << bot_name << "\n";
-        std::cout << "Opponent: " << opponent_bot_name << "\n";
-        std::cout << "Num superregions: " << super_regions.size() << "\n";
-        std::cout << "Starting armies: " << armies_left << "\n";
-        //std::cout << "Num starting regions: " << starting_regions.size() << "\n";
-        std::cout << "Pick amount: " << pick_amount << "\n";
-
-        std::cout << "Opponent Regions: ";
-        for(unsigned int i=0; i<opponent_regions.size(); i++)
-        {
-            std::cout << ", "<< std::to_string(opponent_regions[i]) << endl;
-        }
-        std::cout << endl;
-        //p_super_regions.print();
-      }
-
-      if(std::cin.peek() == '\n')
-      {
-        break;
-      }
-
-
+      std::cout << endl;
+      //p_super_regions.print();
+    }
+    
+    if(std::cin.peek() == '\n')
+    {
+      break;
+    }
   }
-
 }

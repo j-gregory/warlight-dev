@@ -240,7 +240,7 @@ void Parser::parseGo()
   bot->setPhase(phase);
 
   //kq: debug trace, take out later
-  std::cout << "TRACE: Parser::parseGo()" << std::endl;;
+  //std::cout << "TRACE: Parser::parseGo()" << std::endl;;
 }
 
 /* ************************************ */

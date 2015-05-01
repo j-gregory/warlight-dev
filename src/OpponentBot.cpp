@@ -298,6 +298,7 @@ void OpponentBot::regionToSuperRegionMapping()  //This should be called only onc
 
     allMappingSetupDone = true;    //this routine will not be triggered from now on.
 
+    /*
 #ifndef DEBUG_CANCEL_PRINT
 
         std::cout << "Printing regionToSuperRegionMap :=" << endl;
@@ -322,6 +323,7 @@ void OpponentBot::regionToSuperRegionMapping()  //This should be called only onc
         }
 
 #endif
+    */
 }
 
 //Sets up a quick list of achievable Super Regions and their heuristic cost
@@ -421,8 +423,8 @@ void OpponentBot::calculateCost()
     }
     std::sort(begin(SuperRegionPursueList), end(SuperRegionPursueList), TupleCompareAscending<1>());    //ordered, so lowest cost always ontop
 
+    /*
 #ifndef DEBUG_CANCEL_PRINT
-
         std::cout << "Printing SuperRegionPursueList :=" << endl;
         if(SuperRegionPursueList.size() > 0)
         {
@@ -437,6 +439,7 @@ void OpponentBot::calculateCost()
         }
 
 #endif
+    */
 }//OpponentBot::calculateCost()
 
 
