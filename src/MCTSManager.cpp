@@ -23,9 +23,9 @@ std::string MCTSManager::execute(std::string name, std::vector<Region> all_regio
   std::cout << "Tree initialization complete\n";
 
   std::cout << "Printing tree\n";
-  //kptree::print_tree_bracketed(test, std::cout);
-  printTree(game_tree);
-  //printTreeBracketed(game_tree);
+  ////kptree::print_tree_bracketed(test, std::cout);
+  //printTree(game_tree);
+  ////printTreeBracketed(game_tree);
 
   /* =============================================================================== */
   // This will be based on time, but for debuggin purposes just an arbitrary number of iterations
@@ -42,6 +42,7 @@ std::string MCTSManager::execute(std::string name, std::vector<Region> all_regio
   std::cout << "Starting SELECTION process\n";
 
   // SELECTION PROCESS - RANDOM
+  /*
   TreeSiblingIterator node_itr = game_tree.begin();
   //int num_nodes = game_tree.size();
   int max_depth = game_tree.max_depth();              // Opportunity for optimization!
@@ -67,13 +68,14 @@ std::string MCTSManager::execute(std::string name, std::vector<Region> all_regio
     //leaf = game_tree.begin(loc);
     curr_depth++;
   }
+  */
 
   // SELECTION PROCESS - UCT
   ////TreeFixedDepthIterator node_itr = game_tree.begin_fixed(game_tree.begin(), 1);
-  //TreeIterator node_itr = game_tree.begin();
-  //State selection = UCT(node_itr);
-
-  // @TODO: Will need to reset nodes' numvisit count
+  TreeIterator node_itr = game_tree.begin();
+  State selection = UCT(node_itr);
+  node_itr = game_tree.begin();
+  while((*node_itr) != selection) node_itr++;
 
   std::cout << "Randomly selected leaf: " << (*node_itr).getName() << std::endl;
 
@@ -127,6 +129,15 @@ std::string MCTSManager::execute(std::string name, std::vector<Region> all_regio
     node_itr = game_tree.parent(node_itr);
   }
 
+  // Reset nodes' Q and numVisit values
+  node_itr = game_tree.begin();
+  while(game_tree.is_valid(node_itr))
+  {
+    (*node_itr).setNumVisits(0);
+    (*node_itr).setQval(0.0);
+    node_itr++;
+  }
+
   // DONE SINGLE ITERATION OF MCTS
 
   //}
@@ -138,12 +149,14 @@ std::string MCTSManager::execute(std::string name, std::vector<Region> all_regio
 
 State MCTSManager::UCT(TreeIterator& node_itr)
 {
+  std::cout << "Starting UCT algorithm\n";
   State selection;
   int time_left = 5;   // Could incorporate actual time later
   std::vector<State> envelope;
   double cost = 0;
   while(time_left > 0)
   {
+    std::cout << "Calling UCTHelper\n";
     cost = UCTHelper(node_itr, 3, envelope, selection);
     node_itr = node_itr.begin();
     time_left--;
@@ -181,8 +194,10 @@ double MCTSManager::UCTHelper(TreeIterator& node_itr, int cutoff, std::vector<St
   for(int i = 0; i < num_children; i++) node_itr--;
 
   int num_untried = (int)untried.size();
+  std::cout << "Untried actions: " << num_untried << "\n";
   if(num_untried > 0)
   {
+    std::cout << "Choosing random <action, state> \n";
     // Choose random next state from untried
     int rand_index = rand() % num_untried;
     //s_prime = untried[rand_index];
@@ -192,6 +207,7 @@ double MCTSManager::UCTHelper(TreeIterator& node_itr, int cutoff, std::vector<St
   }
   else
   {
+    std::cout << "Choosing argmin <action, state> according to UCT formula \n";
     // Choose state with minimum (Q - C(log(n)/n') value
     double uct_val = 100000;
     for(int i = 0; i < num_children; i++)
@@ -210,9 +226,11 @@ double MCTSManager::UCTHelper(TreeIterator& node_itr, int cutoff, std::vector<St
   // No need to sample, already have next state
   // At this point, iterator should be at next state and s_prime should be set
   
+  std::cout << "Performing cost rollout (recursive UCT)\n";
   // Perform cost rollout using UCT with cutoff
   double cost_rollout = 1 + UCTHelper(node_itr, --cutoff, envelope, s_prime);
 
+  std::cout << "Updating UCT values of states\n";
   // Update current state's Q and n values
   int num_visits = (*node_itr).getNumVisits();
   (*node_itr).setQval(((num_visits*(*node_itr).getQval())+cost_rollout) / (1+num_visits));
@@ -223,6 +241,8 @@ double MCTSManager::UCTHelper(TreeIterator& node_itr, int cutoff, std::vector<St
   (*node_itr).incrementNumVisits();
   // Return iterator to next state, do we need this?
   //while((*node_itr) != s_prime) node++;
+  
+  std::cout << "Cost rollout for this state is " << cost_rollout << "\n";
 
   return cost_rollout;
 }
@@ -443,7 +463,8 @@ std::string MCTSManager::findBestMove(Tree game_tree)
 void MCTSManager::printTree(Tree game_tree)
 {
   TreeIterator node = game_tree.begin();
-  while(node != game_tree.end())
+  //while(node != game_tree.end())
+  while(game_tree.is_valid(node))
   {
     std::cout << "Owner: "    << (*node).getName()
 	      << "   Win %: " << (*node).getWinPercentage() << std::endl;

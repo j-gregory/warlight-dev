@@ -233,10 +233,13 @@ void Parser::parseOpponentMoves()   //kq: who is calling this? Is this good plac
 /* "go" Parser */
 void Parser::parseGo()
 {
+  std::cout << "Parsing go\n";
   std::string phase;
   int time_limit;
   std::cin >> phase >> time_limit;
+  std::cout << "Got params\n";
   bot->startClock(time_limit);
+  std::cout << "Setting phase" << phase << "\n";
   bot->setPhase(phase);
 
   //kq: debug trace, take out later
