@@ -98,12 +98,14 @@ std::string MCTSManager::execute(std::string name, std::vector<Region> all_regio
     State result(name, all_regions, owned_regions, 0.5);
     if(our_turn)
     {
+      std::cout << "Expanding: Simulating our turn" << std::endl;
       simulateOurTurn((*node_itr), result);
     }
     else
     {
-      result.setName("opponent");
+      std::cout << "Expanding: Simulating opponent's turn" << std::endl;
       simulateOpponentsTurn((*node_itr), result);
+      result.setName("opponent");
     }
     our_turn = (!our_turn);
     
@@ -163,7 +165,7 @@ std::string MCTSManager::execute(std::string name, std::vector<Region> all_regio
   /* =============================================================================== */
 
   // Find our best move - Find child node with largest win_percentage, return that command
-  return (name + findBestMove(game_tree));
+  return findBestMove(game_tree);
 }
 
 State MCTSManager::UCT(TreeIterator& node_itr)
@@ -476,21 +478,30 @@ double MCTSManager::calculateWinPercentage(std::vector<Region> regions, State& s
   // 2) Based on number of owned regions vs total regions
   // 3) Based on number of our regions vs opponents regions
 
-  return (state.getOwnedRegions().size() / regions.size());
+  /*
+  std::cout << "Win percentage calculation -  ownedregions: " << state.getOwnedRegions().size()
+	    << "  totalregions: " << regions.size() 
+	    << "  percentage: " << (state.getOwnedRegions().size() / (double)regions.size())
+	    << std::endl;
+  */
+  return (state.getOwnedRegions().size() / (double)regions.size());
 }
 std::string MCTSManager::findBestMove(Tree game_tree)
 {
-  // No moves by default to save time
-  std::string best_move = "No moves\n";
+  // No moves if game_tree is empty
+  if(game_tree.size() == 0) return "No moves\n";
+
+  std::string best_move;
   // Iterate immediate children, find highest win_percentage
   double temp_win_percentage = 0;
-  TreeSiblingIterator best;
-  TreeSiblingIterator child = game_tree.begin();
-  while(child != game_tree.end())
+  //TreeSiblingIterator child = game_tree.begin();
+  TreeFixedDepthIterator child = game_tree.begin_fixed(game_tree.begin(), 1);
+  //while(child != game_tree.end())
+  while(game_tree.is_valid(child))
   {
     if((*child).getWinPercentage() > temp_win_percentage)
     {
-      best_move = " attack/transfer random1 random2 5";
+      best_move = (*child).getMove();
       temp_win_percentage = (*child).getWinPercentage();
     }
     ++child;
