@@ -107,7 +107,7 @@ void Bot::addSuperRegion(unsigned super_region_id, int reward)
     super_regions.push_back(SuperRegion(0, 0));
   }
   super_regions[super_region_id] = SuperRegion(super_region_id, reward);
-
+  /*
 #ifndef DEBUG_CANCEL_PRINT
   //kq: debug, take it out later.
   std::cout << "superregion being added\n";
@@ -117,6 +117,7 @@ void Bot::addSuperRegion(unsigned super_region_id, int reward)
     std::cout << "id: " << std::to_string(it->getID()) << " #_regions : " << std::to_string(it->getNumRegions()) << " bonus : " << std::to_string(it->getReward()) << endl;   //it->getID()
   }
 #endif
+  */
 }
 
 void Bot::addRegion(unsigned region_id, unsigned super_region_id)

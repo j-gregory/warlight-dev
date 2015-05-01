@@ -19,13 +19,15 @@ std::string MCTSManager::execute(std::string name, std::vector<Region> all_regio
 
   // Create root node with current state of game
   Tree game_tree;
-  game_tree.insert(game_tree.begin(), State(name, all_regions, owned_regions));
+  game_tree.insert(game_tree.begin(), State("root", all_regions, owned_regions));
   std::cout << "Tree initialization complete" << std::endl;
 
   std::cout << "Printing tree\n";
   ////kptree::print_tree_bracketed(test, std::cout);
   printTree(game_tree);
   ////printTreeBracketed(game_tree);
+
+  bool our_turn = true;
 
   /* =============================================================================== */
   // This will be based on time, but for debuggin purposes just an arbitrary number of iterations
@@ -90,11 +92,21 @@ std::string MCTSManager::execute(std::string name, std::vector<Region> all_regio
      *  Expand current path by one node representing a random move
      *  ------------------------------------------------------------------------------
      */
-    State result(name, all_regions, owned_regions, 0.5);
     std::cout << "Starting EXPANSION process\n";
-    simulateOurTurn((*node_itr), result);
+    State result(name, all_regions, owned_regions, 0.5);
+    if(our_turn)
+    {
+      simulateOurTurn((*node_itr), result);
+    }
+    else
+    {
+      result.setName("opponent");
+      simulateOpponentsTurn((*node_itr), result);
+    }
+    our_turn = (!our_turn);
     
     // Add new node to tree, iterate there
+    std::cout << "* Adding new node to game_tree from " << result.getName() << std::endl;
     node_itr = game_tree.append_child(node_itr, result);
     std::cout << "Now at new leaf: " << (*node_itr).getName() << std::endl;
     
@@ -164,7 +176,7 @@ State MCTSManager::UCT(TreeIterator& node_itr)
   double cost = 0;
   while(time_left > 0)
   {
-    std::cout << "Calling UCTHelper" << std::endl;
+    std::cout << "Calling UCTHelper from node: " << (*node_itr).getName() << std::endl;
     cost = UCTHelper(node_itr, 3, envelope, selection);
     std::cout << "Returned from UCTHelper with cost of " << cost << std::endl;
     node_itr = node_itr.begin();
@@ -215,10 +227,13 @@ double MCTSManager::UCTHelper(TreeIterator& node_itr, int cutoff, std::vector<St
     std::cout << "Choosing random <action, state>" << std::endl;
     // Choose random next state from untried
     int rand_index = rand() % num_untried;
+    std::cout << "rand_index: " << rand_index << std::endl;
     //s_prime = untried[rand_index];
-    for(int i = 0; i != rand_index; i++)
+    node_itr++;
+    for(int i = 0; i != rand_index; i++)   // != rand_index
       node_itr++;
     s_prime = (*node_itr);
+    std::cout << "UCT - randomly chose state " << s_prime.getName() << std::endl;
   }
   else
   {
