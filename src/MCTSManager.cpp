@@ -14,17 +14,17 @@ MCTSManager::~MCTSManager()
 
 std::string MCTSManager::execute(std::string name, std::vector<Region> all_regions, std::vector<int> owned_regions, double timelimit) //kq: This could be expanded with opponent_bot
 {
-  std::cout << "Executing MCTS\n";
-  std::cout << "Initializing tree\n";
+  std::cout << "Executing MCTS" << std::endl;
+  std::cout << "Initializing tree" << std::endl;
 
   // Create root node with current state of game
   Tree game_tree;
   game_tree.insert(game_tree.begin(), State(name, all_regions, owned_regions));
-  std::cout << "Tree initialization complete\n";
+  std::cout << "Tree initialization complete" << std::endl;
 
   std::cout << "Printing tree\n";
   ////kptree::print_tree_bracketed(test, std::cout);
-  //printTree(game_tree);
+  printTree(game_tree);
   ////printTreeBracketed(game_tree);
 
   /* =============================================================================== */
@@ -39,10 +39,9 @@ std::string MCTSManager::execute(std::string name, std::vector<Region> all_regio
    *  For now, traverse "random" branch until random location or child node
    *  ------------------------------------------------------------------------------
    */
-  std::cout << "Starting SELECTION process\n";
-
-  // SELECTION PROCESS - RANDOM
+  std::cout << "Starting SELECTION process" << std::endl;
   /*
+  // SELECTION PROCESS - RANDOM
   TreeSiblingIterator node_itr = game_tree.begin();
   //int num_nodes = game_tree.size();
   int max_depth = game_tree.max_depth();              // Opportunity for optimization!
@@ -72,8 +71,11 @@ std::string MCTSManager::execute(std::string name, std::vector<Region> all_regio
 
   // SELECTION PROCESS - UCT
   ////TreeFixedDepthIterator node_itr = game_tree.begin_fixed(game_tree.begin(), 1);
-  TreeIterator node_itr = game_tree.begin();
+  std::cout << "Preparing to run UCT algorithm" << std::endl;
+  TreeSiblingIterator node_itr = game_tree.begin();
   State selection = UCT(node_itr);
+  std::cout << "UCT Algorithm found selection state and returned" << std::endl;
+  std::cout << "Selection: " << selection.getName() << std::endl;
   node_itr = game_tree.begin();
   while((*node_itr) != selection) node_itr++;
 
@@ -147,34 +149,44 @@ std::string MCTSManager::execute(std::string name, std::vector<Region> all_regio
   return (name + findBestMove(game_tree));
 }
 
-State MCTSManager::UCT(TreeIterator& node_itr)
+State MCTSManager::UCT(TreeSiblingIterator& node_itr)
 {
-  std::cout << "Starting UCT algorithm\n";
+  std::cout << "Starting UCT algorithm" << std::endl;
+
+  if(node_itr.number_of_children() == 0) return (*node_itr);
+
   State selection;
   int time_left = 5;   // Could incorporate actual time later
   std::vector<State> envelope;
   double cost = 0;
   while(time_left > 0)
   {
-    std::cout << "Calling UCTHelper\n";
+    std::cout << "Calling UCTHelper" << std::endl;
     cost = UCTHelper(node_itr, 3, envelope, selection);
+    std::cout << "Returned from UCTHelper with cost of " << cost << std::endl;
     node_itr = node_itr.begin();
     time_left--;
+    std::cout << "Returned iterator to head of tree, time left is " << time_left << std::endl;
   }
   return selection;
 }
 
 
-double MCTSManager::UCTHelper(TreeIterator& node_itr, int cutoff, std::vector<State> envelope, State& s_prime)
+double MCTSManager::UCTHelper(TreeSiblingIterator& node_itr, int cutoff, std::vector<State> envelope, State& s_prime)
 {
+  std::cout << "Starting UCTHelper" << std::endl;
   State s = (*node_itr);
   int num_children = node_itr.number_of_children();
   if(num_children == 0) return 0.0;
   if(cutoff == 0) return 5.0;  // @TODO: Fix this
 
+  std::cout << "Envelope size: " << envelope.size() << std::endl;
+
   std::vector<State> untried;
-  if(std::find(envelope.begin(), envelope.end(), (*node_itr)) == envelope.end())
+  if(std::find(envelope.begin(), envelope.end(), (*node_itr)) == envelope.end() || 
+     (int)envelope.size() == 0)
   {
+    std::cout << "State is NOT in envelope, adding ..." << std::endl;
     (*node_itr).setNumVisits(0);
     envelope.push_back(*node_itr);
 
