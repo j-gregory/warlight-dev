@@ -217,8 +217,12 @@ double MCTSManager::UCTHelper(TreeIterator& node_itr, int cutoff, std::vector<St
   int num_visits = (*node_itr).getNumVisits();
   (*node_itr).setQval(((num_visits*(*node_itr).getQval())+cost_rollout) / (1+num_visits));
   (*node_itr).incrementNumVisits();
-  // @TODO: Need to actually update state in node_itr because this won't take effect out of scope
+  // Update original "root" state in node_itr
   s.incrementNumVisits();
+  while((*node_itr) != s) node_itr--;
+  (*node_itr).incrementNumVisits();
+  // Return iterator to next state, do we need this?
+  //while((*node_itr) != s_prime) node++;
 
   return cost_rollout;
 }
