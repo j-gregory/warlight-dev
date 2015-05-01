@@ -252,12 +252,35 @@ void Bot::executeAction()
   {
     if (owned_regions.size() > 0)
     {
-      int index = rand() % owned_regions.size();
-      int region_id = owned_regions[index];
-      std::cout << bot_name << " place_armies " << region_id << " " << armies_left << "\n";
-      std::cout.flush();
-      // Update
-      regions[region_id].setArmies(regions[region_id].getNumArmies()+armies_left);
+      
+      // If we own two regions, split army allocations evenly
+      if(owned_regions.size() == 2)
+      {
+	int first_region = owned_regions[0];
+	int second_region = owned_regions[1];
+
+	int first_allocation = floor(armies_left/2.0);	
+	int second_allocation = armies_left - first_allocation;
+
+	regions[first_region].setArmies(regions[first_region].getNumArmies()+first_allocation);
+	regions[second_region].setArmies(regions[second_region].getNumArmies()+second_allocation);
+
+	std::cout << bot_name << " place_armies " << first_region << " " << first_allocation
+		  << ", "
+		  << bot_name << " place_armies " << second_region << " " << second_allocation
+		  << "\n";
+	std::cout.flush();
+      }
+
+      // Else split army allocations between three regions
+      else
+      {
+	int index = rand() % owned_regions.size();
+	int region_id = owned_regions[index];
+	regions[region_id].setArmies(regions[region_id].getNumArmies()+armies_left);
+	std::cout << bot_name << " place_armies " << region_id << " " << armies_left << "\n";
+	std::cout.flush();
+      }
     }
     else
     {
