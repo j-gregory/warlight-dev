@@ -445,6 +445,7 @@ std::string MCTSManager::getSeededRandomMove(State& state, int from_id)
 std::string MCTSManager::getSeededDirectedMove(State& state, int from_id)
 {
   std::vector<Region> all_regions = state.getAllRegions();
+  std::vector<int> owned_regions = state.getOwnedRegions();
   int att_eligible_armies = (all_regions[from_id].getNumArmies()-1);
   
   if(att_eligible_armies <= 2) return "No moves\n";
@@ -458,9 +459,29 @@ std::string MCTSManager::getSeededDirectedMove(State& state, int from_id)
     armies_to_region[num_armies] = region_id;
   }
   
-  std::map<int, int>::iterator map_itr = armies_to_region.begin();
-  int to_id = map_itr->second;
-  int to_armies = map_itr->first;
+  // Let's get neighbor we don't own, with lowest troops
+  int to_id = 0;
+  int to_armies = 0;
+  std::map<int, int>::iterator map_itr;
+  for(map_itr = armies_to_region.begin();
+      map_itr != armies_to_region.end();
+      ++map_itr)
+  {
+    if(std::find(owned_regions.begin(), owned_regions.end(), map_itr->second) == owned_regions.end())
+    {
+      to_id = map_itr->second;
+      to_armies = map_itr->first;
+      break;
+    }
+  }
+
+  // If we didn't find a neighbor we don't own, just transfer
+  if(to_id == 0)
+  {
+    map_itr = armies_to_region.begin();
+    to_id = map_itr->second;
+    to_armies = map_itr->first;
+  }
 
   // Determine how many armies to attack with (if at all)
   if(att_eligible_armies <= to_armies) return "No moves\n";
@@ -473,9 +494,17 @@ std::string MCTSManager::getSeededDirectedMove(State& state, int from_id)
   //attack_armies++;
 
   // Attack with some random amount more than the opposing region
-  int diff = att_eligible_armies - to_armies;
-  int eps = rand() % diff;
-  int attack_armies = to_armies + eps;
+  //int diff = att_eligible_armies - to_armies;
+  //int eps = rand() % diff;
+  //int attack_armies = to_armies + eps;
+
+  // Attack with one of the following:
+  //   1) minimum required for what we think would be a successful attack
+  //   2) all that we have
+  int attack_armies = att_eligible_armies;
+  double threshold = (1.5 * to_armies);
+  if(att_eligible_armies >= threshold)
+    attack_armies = ceil(threshold);
 
   return (all_regions[from_id].getOwner() +
 	  " attack/transfer " +
