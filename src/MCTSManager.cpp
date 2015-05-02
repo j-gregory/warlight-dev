@@ -460,7 +460,7 @@ std::string MCTSManager::getSeededDirectedMove(State& state, int from_id)
   }
   
   // Let's get neighbor we don't own, with lowest troops
-  int to_id = 0;
+  int to_id = -1;
   int to_armies = 0;
   std::map<int, int>::iterator map_itr;
   for(map_itr = armies_to_region.begin();
@@ -476,12 +476,13 @@ std::string MCTSManager::getSeededDirectedMove(State& state, int from_id)
   }
 
   // If we didn't find a neighbor we don't own, just transfer
-  if(to_id == 0)
+  if(to_id == -1)
   {
     map_itr = armies_to_region.begin();
     to_id = map_itr->second;
     to_armies = map_itr->first;
   }
+
 
   // Determine how many armies to attack with (if at all)
   if(att_eligible_armies <= to_armies) return "No moves\n";
