@@ -451,19 +451,15 @@ void MCTSManager::simulateOurTurn(State& state, State& result)
     if(survive_defend <= 0)
     {
       //std::cout << "Attack: SUCCESS\n";
-      // Update number of armies in current state
+      // Update number of armies in resulting state
       int remaining_armies = state.getAllRegions()[from].getNumArmies() - attacking_armies;
-      state.setArmies(from, remaining_armies);
+      result.setArmies(from, remaining_armies);
 
-      // @TODO: Set region owner
-
-      // ***** @TODO *****
       // Set number of armies in newly-acquired region
-      //Region winnings = regions[to];
-      //winnings.setArmies(survive_attack);
+      result.getAllRegions()[to].setOwner(state.getName());
+      result.getAllRegions()[to].setArmies(survive_attack);
       // Add newly-acquired region to regions owned
-      //result.addNewOwnedRegion(winnings);
-      // *****************
+      result.addNewOwnedRegion(to);
     }
 
     // If we lost the battle, we may update the other region's number of surviving armies (defense)
@@ -473,13 +469,13 @@ void MCTSManager::simulateOurTurn(State& state, State& result)
       // Update number of armies in current state
       int remaining_attacking_armies =
 	state.getAllRegions()[from].getNumArmies() - attacking_destroyed;  // attacking_armies?
-      state.setArmies(from, remaining_attacking_armies);
+      result.setArmies(from, remaining_attacking_armies);
 
       // Update number of armies in defending region
       int remaining_defending_armies =
 	state.getAllRegions()[to].getNumArmies() - defending_destroyed;
       // Current implementation doesn't support this because Region 'to' won't be in 'owned'
-      //state.setArmies(to, remaining_defending_armies);
+      result.getAllRegions()[to].setArmies(remaining_defending_armies);
     }
   }
 
