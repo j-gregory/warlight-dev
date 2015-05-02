@@ -422,12 +422,9 @@ std::string MCTSManager::getTotallyRandomMove(State& state)
 	  std::to_string(max_armies-1) + "\n");
 }
 
-std::string MCTSManager::getSeededRandomMove(State& state, int seed)
+std::string MCTSManager::getSeededRandomMove(State& state, int from_id)
 {
   std::vector<Region> all_regions = state.getAllRegions();
-  std::vector<int> owned_regions  = state.getOwnedRegions();
-
-  int from_id = owned_regions[seed];
   int region_armies = all_regions[from_id].getNumArmies();
   
   if(region_armies <= 2) return "No moves\n";
@@ -437,6 +434,48 @@ std::string MCTSManager::getSeededRandomMove(State& state, int seed)
 
   int attack_armies = rand() % (region_armies-2);
   attack_armies++;
+
+  return (all_regions[from_id].getOwner() +
+	  " attack/transfer " +
+	  std::to_string(from_id) + " " +
+	  std::to_string(to_id) + " " +
+	  std::to_string(attack_armies));
+}
+
+std::string MCTSManager::getSeededDirectedMove(State& state, int from_id)
+{
+  std::vector<Region> all_regions = state.getAllRegions();
+  int att_eligible_armies = (all_regions[from_id].getNumArmies()-1);
+  
+  if(att_eligible_armies <= 2) return "No moves\n";
+
+  // Sort list of neighbors by lowest number of troops
+  std::map<int, int> armies_to_region;
+  for(int i = 0; i < (int)all_regions[from_id].getNumNeighbors(); i++)
+  {
+    int region_id = all_regions[from_id].getNeighbors()[i];
+    int num_armies = all_regions[region_id].getNumArmies();
+    armies_to_region[num_armies] = region_id;
+  }
+  
+  std::map<int, int>::iterator map_itr = armies_to_region.begin();
+  int to_id = map_itr->second;
+  int to_armies = map_itr->first;
+
+  // Determine how many armies to attack with (if at all)
+  if(att_eligible_armies <= to_armies) return "No moves\n";
+
+  // Attack with all we got!
+  //int attack_armies = att_eligible_armies;
+
+  // Attack with some random amount
+  //int attack_armies = rand() % att_eligible_armies;
+  //attack_armies++;
+
+  // Attack with some random amount more than the opposing region
+  int diff = att_eligible_armies - to_armies;
+  int eps = rand() % diff;
+  int attack_armies = to_armies + eps;
 
   return (all_regions[from_id].getOwner() +
 	  " attack/transfer " +
@@ -461,7 +500,8 @@ void MCTSManager::simulateOurTurn(State& state, State& result)
   for(int i = 0; i < (int)state.getOwnedRegions().size(); i++)
   {
     // Could randomize seed also
-    single_move = getSeededRandomMove(state, i);
+    //single_move = getSeededRandomMove(state, state.getOwnedRegions()[i]);
+    single_move = getSeededDirectedMove(state, state.getOwnedRegions()[i]);
     if(single_move == "No moves\n") 
       continue; //i--;
     else

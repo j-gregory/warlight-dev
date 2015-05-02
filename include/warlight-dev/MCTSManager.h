@@ -41,7 +41,8 @@ class MCTSManager
   std::string getAggressiveRandomMove(State& state);
   std::string getImprovedRandomMove(State& state);
   std::string getTotallyRandomMove(State& state);
-  std::string getSeededRandomMove(State& state, int seed);
+  std::string getSeededRandomMove(State& state, int from_id);
+  std::string getSeededDirectedMove(State& state, int from_id);
   void simulateOurTurn(State& state, State& result);
   void simulateOpponentsTurn(State& state, State& result);
   void simulateBattle(int attacking_armies, int defending_armies, int& attacking_destroyed, int& defending_destroyed);
