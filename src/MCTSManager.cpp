@@ -287,11 +287,10 @@ double MCTSManager::UCTHelper(TreeIterator& node_itr, int cutoff, std::vector<St
   return cost_rollout;
 }
 
-std::string MCTSManager::getRandomMove(State& state)    //kq: who is calling it ?
+std::string MCTSManager::getAggressiveRandomMove(State& state)
 {
   std::string rand_move = "No moves\n";
 
-  /*
   // Look at state.owned_regions, pick a random valid move
   std::vector<Region> all_regions = state.getAllRegions();
   std::vector<int> owned_regions  = state.getOwnedRegions();
@@ -314,11 +313,6 @@ std::string MCTSManager::getRandomMove(State& state)    //kq: who is calling it 
     }
   }
   
-  // Find (random) adjacent region
-  //int owned_region = all_regions[owned_regions[from_index]].getID();
-  //int rand_index = rand() % all_regions[owned_region].getNumNeighbors();
-  //int to = all_regions[owned_region].getNeighbors()[rand_index];
-  
   to = from_id;
   int attempts = 0;
   int num_neighbors = all_regions[from_id].getNumNeighbors();
@@ -329,14 +323,16 @@ std::string MCTSManager::getRandomMove(State& state)    //kq: who is calling it 
     to = all_regions[from_id].getNeighbors()[rand_index];
     attempts++;
   }
-  if(attempts < 10) found_move = true;
 
   return (all_regions[from_id].getOwner() +
 	  " attack/transfer " +
 	  std::to_string(from_id) + " " +
 	  std::to_string(to) + " " +
 	  std::to_string(max_armies-1) + "\n");
-  */
+}
+
+std::string MCTSManager::getImprovedRandomMove(State& state)
+{
 
   // Convert owned regions to map, automatically sorts
   std::vector<Region> all_regions = state.getAllRegions();
@@ -401,85 +397,159 @@ std::string MCTSManager::getRandomMove(State& state)    //kq: who is calling it 
 	  std::to_string(max_armies-1) + "\n");
 }
 
+std::string MCTSManager::getTotallyRandomMove(State& state)
+{  
+  std::vector<Region> all_regions = state.getAllRegions();
+  std::vector<int> owned_regions  = state.getOwnedRegions();
+
+  int rand_index = rand() % (int)owned_regions.size();
+  int from_id = owned_regions[rand_index];
+  int region_armies = all_regions[from_id].getNumArmies();
+  while(region_armies < 2) 
+  {
+    rand_index = rand() % (int)owned_regions.size();
+    from_id = owned_regions[rand_index];
+    region_armies = all_regions[from_id].getNumArmies();
+  }
+  rand_index = rand() % (all_regions[from_id].getNumNeighbors());
+  int to_id = all_regions[from_id].getNeighbors()[rand_index];
+  int max_armies = all_regions[from_id].getNumArmies();
+
+  return (all_regions[from_id].getOwner() +
+	  " attack/transfer " +
+	  std::to_string(from_id) + " " +
+	  std::to_string(to_id) + " " +
+	  std::to_string(max_armies-1) + "\n");
+}
+
+std::string MCTSManager::getSeededRandomMove(State& state, int seed)
+{
+  std::vector<Region> all_regions = state.getAllRegions();
+  std::vector<int> owned_regions  = state.getOwnedRegions();
+
+  int from_id = owned_regions[seed];
+  int region_armies = all_regions[from_id].getNumArmies();
+  
+  if(region_armies <= 2) return "No moves\n";
+
+  int rand_index = rand() % (all_regions[from_id].getNumNeighbors());
+  int to_id = all_regions[from_id].getNeighbors()[rand_index];
+
+  int attack_armies = rand() % (region_armies-2);
+  attack_armies++;
+
+  return (all_regions[from_id].getOwner() +
+	  " attack/transfer " +
+	  std::to_string(from_id) + " " +
+	  std::to_string(to_id) + " " +
+	  std::to_string(attack_armies));
+}
+
 void MCTSManager::simulateOurTurn(State& state, State& result)
 {
   //std::cout << "-- Simulating our turn --" << std::endl;;
   // Get random, valid move
-  std::string move = getRandomMove(state);
+  std::string move = getImprovedRandomMove(state);
 
-  // Produce resulting state for random valid move by simulating turn
-  //std::cout << "Executing random move: " << move;
-
-  std::vector<std::string> tokens = split(move, ' ');
-  if(tokens[1] == "attack/transfer")
+  // Get random number of random moves
+  //std::string all_moves = "";
+  std::vector<std::string> all_moves;
+  std::string single_move;
+  //int random_num_moves = rand() % (int)state.getOwnedRegions().size();
+  //random_num_moves++;  // Want at least one random move
+  //for(int i = 0; i < random_num_moves; i++)
+  for(int i = 0; i < (int)state.getOwnedRegions().size(); i++)
   {
-    int from = std::stoi(tokens[2]);
-    int to = std::stoi(tokens[3]);
-    int attacking_armies = std::stoi(tokens[4]);
-    int defending_armies = state.getAllRegions()[to].getNumArmies();
-
-    //std::cout << "Simulating attack from region " << from
-    //          << " with " << attacking_armies << " armies"
-    //	        << " to region " << to
-    //	        << " that has " << defending_armies << " armies " << std::endl;
-
-    int attacking_destroyed = 0;
-    int defending_destroyed = 0;
-    simulateBattle(attacking_armies, defending_armies, attacking_destroyed, defending_destroyed);
-
-    int survive_attack = attacking_armies - attacking_destroyed;
-    //if(survive_attack < 0) survive_attack = 0;
-    int survive_defend = defending_armies - defending_destroyed;
-    //if(survive_defend < 0) survive_defend = 0;
-
-    //std::cout << "Battle Simulation Results: " << std::endl;
-    //std::cout << "attacking_armies: "     << attacking_armies
-    //	      << " attacking_destroyed: " << attacking_destroyed
-    //	      << " survive_attack: "      << survive_attack << std::endl;
-    //std::cout << "defending_armies: "     << defending_armies
-    //	      << " defending_destroyed: " << defending_destroyed
-    //	      << " survive_defend: "      << survive_defend << std::endl;
-
-    // The outcome of an attack is ONE of the following:
-    //   1) Win:  Move the surviving armies onto new region
-    //   2) Lose: All attacking armies died, all non-attacking remain safe
-    // By definition: attacking_armies = lost + survived
-    // Regardless of how many survive or are lost, the remaining number of armies is (original - attack)
-    // In other words, once allocated for an attack, armies will never return to the region
-
-    // If we won the battle, we need to update the owner and number of armies with how many survived
-    if(survive_defend <= 0)
-    {
-      //std::cout << "Attack: SUCCESS\n";
-      // Update number of armies in resulting state
-      int remaining_armies = state.getAllRegions()[from].getNumArmies() - attacking_armies;
-      result.setArmies(from, remaining_armies);
-
-      // Set number of armies in newly-acquired region
-      result.getAllRegions()[to].setOwner(state.getName());
-      result.getAllRegions()[to].setArmies(survive_attack);
-      // Add newly-acquired region to regions owned
-      result.addNewOwnedRegion(to);
-    }
-
-    // If we lost the battle, we may update the other region's number of surviving armies (defense)
+    // Could randomize seed also
+    single_move = getSeededRandomMove(state, i);
+    if(single_move == "No moves\n") 
+      continue; //i--;
     else
-    {
-      //std::cout << "Attack: FAILED\n";
-      // Update number of armies in current state
-      int remaining_attacking_armies =
-	state.getAllRegions()[from].getNumArmies() - attacking_destroyed;  // attacking_armies?
-      result.setArmies(from, remaining_attacking_armies);
-
-      // Update number of armies in defending region
-      int remaining_defending_armies =
-	state.getAllRegions()[to].getNumArmies() - defending_destroyed;
-      // Current implementation doesn't support this because Region 'to' won't be in 'owned'
-      result.getAllRegions()[to].setArmies(remaining_defending_armies);
-    }
+      all_moves.push_back(single_move);
   }
+  if((int)all_moves.size() == 0) all_moves.push_back(getImprovedRandomMove(state));
 
-  result.setMove(move);
+  std::string final_move = "";
+  for(int i = 0; i < (int)all_moves.size(); i++)
+  {
+    // Produce resulting state for random valid move by simulating turn
+    //std::cout << "Executing random move: " << move;
+
+    std::vector<std::string> tokens = split(all_moves[i], ' ');
+    if(tokens[1] == "attack/transfer")
+    {
+      int from = std::stoi(tokens[2]);
+      int to = std::stoi(tokens[3]);
+      int attacking_armies = std::stoi(tokens[4]);
+      int defending_armies = state.getAllRegions()[to].getNumArmies();
+      
+      //std::cout << "Simulating attack from region " << from
+      //          << " with " << attacking_armies << " armies"
+      //	        << " to region " << to
+      //	        << " that has " << defending_armies << " armies " << std::endl;
+      
+      int attacking_destroyed = 0;
+      int defending_destroyed = 0;
+      simulateBattle(attacking_armies, defending_armies, attacking_destroyed, defending_destroyed);
+      
+      int survive_attack = attacking_armies - attacking_destroyed;
+      //if(survive_attack < 0) survive_attack = 0;
+      int survive_defend = defending_armies - defending_destroyed;
+      //if(survive_defend < 0) survive_defend = 0;
+      
+      //std::cout << "Battle Simulation Results: " << std::endl;
+      //std::cout << "attacking_armies: "     << attacking_armies
+      //	      << " attacking_destroyed: " << attacking_destroyed
+      //	      << " survive_attack: "      << survive_attack << std::endl;
+      //std::cout << "defending_armies: "     << defending_armies
+      //	      << " defending_destroyed: " << defending_destroyed
+      //	      << " survive_defend: "      << survive_defend << std::endl;
+      
+      // The outcome of an attack is ONE of the following:
+      //   1) Win:  Move the surviving armies onto new region
+      //   2) Lose: All attacking armies died, all non-attacking remain safe
+      // By definition: attacking_armies = lost + survived
+      // Regardless of how many survive or are lost, the remaining number of armies is (original - attack)
+      // In other words, once allocated for an attack, armies will never return to the region
+      
+      // If we won the battle, we need to update the owner and number of armies with how many survived
+      if(survive_defend <= 0)
+      {
+	//std::cout << "Attack: SUCCESS\n";
+	// Update number of armies in resulting state
+	int remaining_armies = state.getAllRegions()[from].getNumArmies() - attacking_armies;
+	result.setArmies(from, remaining_armies);
+	
+	// Set number of armies in newly-acquired region
+	result.setRegionOwner(to, state.getAllRegions()[from].getOwner());
+	result.setArmies(to, survive_attack);
+	// Add newly-acquired region to regions owned
+	result.addNewOwnedRegion(to);
+      }
+      
+      // If we lost the battle, we may update the other region's number of surviving armies (defense)
+      else
+      {
+	//std::cout << "Attack: FAILED\n";
+	// Update number of armies in current state
+	int remaining_attacking_armies =
+	  state.getAllRegions()[from].getNumArmies() - attacking_destroyed;  // attacking_armies?
+	result.setArmies(from, remaining_attacking_armies);
+	
+	// Update number of armies in defending region
+	int remaining_defending_armies =
+	  state.getAllRegions()[to].getNumArmies() - defending_destroyed;
+	// Current implementation doesn't support this because Region 'to' won't be in 'owned'
+	result.setArmies(to, remaining_defending_armies);
+      }
+    }
+    final_move += all_moves[i];
+    if(i < ((int)all_moves.size()-1)) final_move += ", ";
+  }
+  final_move += "\n";
+
+  //result.setMove(move);
+  result.setMove(final_move);
   double wp = calculateWinPercentage(result.getAllRegions(), result);
   result.setWinPercentage(wp);
 }

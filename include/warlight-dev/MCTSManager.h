@@ -38,7 +38,10 @@ class MCTSManager
  protected:
   State UCT(TreeIterator& node_itr);
   double UCTHelper(TreeIterator& node_itr, int cutoff, std::vector<State> envelope, State& s_prime);
-  std::string getRandomMove(State& state);
+  std::string getAggressiveRandomMove(State& state);
+  std::string getImprovedRandomMove(State& state);
+  std::string getTotallyRandomMove(State& state);
+  std::string getSeededRandomMove(State& state, int seed);
   void simulateOurTurn(State& state, State& result);
   void simulateOpponentsTurn(State& state, State& result);
   void simulateBattle(int attacking_armies, int defending_armies, int& attacking_destroyed, int& defending_destroyed);
