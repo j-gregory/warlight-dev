@@ -250,41 +250,72 @@ void Bot::executeAction()
 
   else if (phase == "place_armies")
   {
-    if (owned_regions.size() > 0)
+    if((int)owned_regions.size() == 0)
+      std::cout << "No moves\n";
+
+    // If we own one region, place all allocations there
+    else if(((int)owned_regions.size() == 1))
     {
+      regions[owned_regions[0]].setArmies(regions[owned_regions[0]].getNumArmies()+armies_left);
+      std::cout << bot_name << " place_armies " << owned_regions[0] << " " << armies_left << "\n";
+    } 
+
+    // If we own two regions, split army allocations evenly
+    else if((int)owned_regions.size() == 2)
+    {      
+      int first_region = owned_regions[0];
+      int second_region = owned_regions[1];
       
-      // If we own two regions, split army allocations evenly
-      if(owned_regions.size() == 2)
-      {
-	int first_region = owned_regions[0];
-	int second_region = owned_regions[1];
+      int first_allocation = floor(armies_left/2.0);	
+      int second_allocation = armies_left - first_allocation;
+      
+      regions[first_region].setArmies(regions[first_region].getNumArmies()+first_allocation);
+      regions[second_region].setArmies(regions[second_region].getNumArmies()+second_allocation);
+      
+      std::cout << bot_name << " place_armies " << first_region << " " << first_allocation
+		<< ", "
+		<< bot_name << " place_armies " << second_region << " " << second_allocation
+		<< "\n";
+      std::cout.flush();
+    }
 
-	int first_allocation = floor(armies_left/2.0);	
-	int second_allocation = armies_left - first_allocation;
-
-	regions[first_region].setArmies(regions[first_region].getNumArmies()+first_allocation);
-	regions[second_region].setArmies(regions[second_region].getNumArmies()+second_allocation);
-
-	std::cout << bot_name << " place_armies " << first_region << " " << first_allocation
-		  << ", "
-		  << bot_name << " place_armies " << second_region << " " << second_allocation
-		  << "\n";
-	std::cout.flush();
-      }
-
-      // Else split army allocations between three regions
-      else
+    // Else split army allocations between three regions
+    else
+    {
+      // Find 3 random regions
+      std::vector<int> rand_regions;
+      for(int i = 0; i < 3; i++)
       {
 	int index = rand() % owned_regions.size();
 	int region_id = owned_regions[index];
-	regions[region_id].setArmies(regions[region_id].getNumArmies()+armies_left);
-	std::cout << bot_name << " place_armies " << region_id << " " << armies_left << "\n";
-	std::cout.flush();
+	int attempts = 0;
+	while(std::find(owned_regions.begin(), owned_regions.end(), region_id) != owned_regions.end())
+	{
+	  if(attempts >= (2*(int)owned_regions.size())) break;
+	  index = rand() % owned_regions.size();
+	  region_id = owned_regions[index];
+	  attempts++;
+	}
+	rand_regions.push_back(region_id);
       }
-    }
-    else
-    {
-      std::cout << "No moves\n" ;
+
+      // Calculate allocations to regions
+      std::vector<int> allocations;
+      allocations.push_back(floor(armies_left/3.0));
+      allocations.push_back(floor(armies_left/3.0));
+      allocations.push_back(armies_left - (allocations[0]+allocations[1]));
+
+      std::string place_move = "";
+      for(int i = 0; i < 3; i++)
+      {
+	regions[rand_regions[i]].setArmies(regions[rand_regions[i]].getNumArmies()+allocations[i]);
+	place_move += (bot_name + " place_armies " + 
+		       std::to_string(rand_regions[i]) + " " + std::to_string(allocations[i]));
+	if(i < 2) place_move += ", ";
+      }
+      place_move += " \n";
+      std::cout << place_move;
+      std::cout.flush();
     }
   }
 
