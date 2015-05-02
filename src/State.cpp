@@ -83,6 +83,11 @@ void State::setOwnedRegions(std::vector<int> r)
   owned_regions = r;
 }
 
+void State::setRegionOwner(int region_id, std::string owner)
+{
+  all_regions[region_id].setOwner(owner);
+}
+
 void State::setArmies(int region_id, int armies)
 {
   // @TODO: CAN SOMEONE CONFIRM ENGINE COMPILES WITH C+11

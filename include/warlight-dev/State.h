@@ -53,6 +53,7 @@ class State
   /* Setters */
   void setName(std::string n);
   void setOwnedRegions(std::vector<int> r); //kq: umm w/o using vector<Region> we loose the neighbored regions. good idea ?
+  void setRegionOwner(int region_id, std::string owner);
   void setArmies(int region_id, int armies);
   void setMove(std::string m);
   void setWinPercentage(double p);
